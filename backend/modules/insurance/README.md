@@ -7,7 +7,7 @@ This module will handle:
 - Coverage verification
 
 ## Planned Features
-- [ ] Insurance provider registration
+- [x] Insurance provider registration
 - [ ] Claims processing workflow
 - [ ] Policy management
 - [ ] Coverage verification
