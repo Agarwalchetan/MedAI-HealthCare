@@ -4,7 +4,6 @@ import {
   Activity, 
   Calendar, 
   FileText, 
-  Bell, 
   TrendingUp,
   Pill,
   FlaskConical,
@@ -33,9 +32,9 @@ const UserDashboard: React.FC = () => {
           userAPI.getLabReports()
         ]);
 
-        setMedicalHistory(medicalResponse.data.medicalHistory || []);
-        setPrescriptions(prescriptionsResponse.data.prescriptions || []);
-        setLabReports(labReportsResponse.data.labReports || []);
+        setMedicalHistory(medicalResponse.data?.medicalHistory || []);
+        setPrescriptions(prescriptionsResponse.data?.prescriptions || []);
+        setLabReports(labReportsResponse.data?.labReports || []);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       }
@@ -129,14 +128,16 @@ const UserDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <UserNavbar />
-      
-      <div className="flex">
+      <div className="flex h-screen">
         <UserSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
         
-        {/* Main Content */}
-        <div className="flex-1 md:ml-64">
-          <div className="p-6">
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <UserNavbar onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
+          
+          {/* Scrollable Content */}
+          <main className="flex-1 overflow-y-auto">
+            <div className="p-6">
             {/* Welcome Section */}
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -257,7 +258,8 @@ const UserDashboard: React.FC = () => {
                 </div>
               </div>
             </div>
-          </div>
+            </div>
+          </main>
         </div>
       </div>
     </div>

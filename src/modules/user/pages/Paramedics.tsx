@@ -5,7 +5,7 @@ import UserSidebar from '../components/UserSidebar';
 import { Paramedic } from '../../../shared/types';
 
 const ParamedicsPage: React.FC = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchLocation, setSearchLocation] = useState('');
   const [selectedService, setSelectedService] = useState('all');
 
@@ -117,35 +117,31 @@ const ParamedicsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <UserNavbar />
-      
-      <div className="flex">
-        <UserSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
-        
-        <div className="flex-1 md:ml-64">
-          <div className="p-6">
-            {/* Header */}
-            <div className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-900">Nearby Medical Services</h1>
-              <p className="text-gray-600 mt-1">Find pharmacies, medical stores, and emergency services near you</p>
-            </div>
+    <div className="flex h-screen bg-gray-50">
+      <UserSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+      <div className="flex-1 flex flex-col md:relative">
+        <UserNavbar />
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Emergency Paramedics</h1>
+            <p className="text-gray-600">Find and contact emergency paramedic services in your area</p>
+          </div>
 
-            {/* Search and Filter */}
-            <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1 relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <MapPin className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    type="text"
-                    value={searchLocation}
-                    onChange={(e) => setSearchLocation(e.target.value)}
-                    placeholder="Search by location or service name..."
-                    className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+          {/* Search and Filter */}
+          <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1 relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <MapPin className="h-5 w-5 text-gray-400" />
                 </div>
+                <input
+                  type="text"
+                  value={searchLocation}
+                  onChange={(e) => setSearchLocation(e.target.value)}
+                  placeholder="Search by location or service name..."
+                  className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
                 <div className="flex items-center space-x-2">
                   <select
                     value={selectedService}
@@ -286,7 +282,6 @@ const ParamedicsPage: React.FC = () => {
                 </button>
               </div>
             </div>
-          </div>
         </div>
       </div>
     </div>

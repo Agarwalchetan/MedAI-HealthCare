@@ -98,7 +98,7 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ isOpen, setIsOpen }) => {
       <div
         className={`fixed left-0 top-0 h-full bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
-        } md:translate-x-0 md:static md:shadow-none md:border-r md:border-gray-200 w-64`}
+        } md:translate-x-0 md:relative md:shadow-none md:border-r md:border-gray-200 w-64 flex-shrink-0`}
       >
         <div className="flex flex-col h-full">
           {/* Header */}

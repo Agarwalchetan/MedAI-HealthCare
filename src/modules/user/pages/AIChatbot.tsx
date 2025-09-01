@@ -89,13 +89,16 @@ const AIChatbot: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <UserNavbar />
-      
-      <div className="flex">
+      <div className="flex h-screen">
         <UserSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
         
-        <div className="flex-1 md:ml-64">
-          <div className="p-6 h-screen flex flex-col">
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <UserNavbar onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
+          
+          {/* Scrollable Content */}
+          <main className="flex-1 overflow-y-auto">
+            <div className="p-6 h-full flex flex-col">
             {/* Header */}
             <div className="mb-6">
               <h1 className="text-3xl font-bold text-gray-900">AI Health Assistant</h1>
@@ -218,7 +221,8 @@ const AIChatbot: React.FC = () => {
                 </div>
               </div>
             </div>
-          </div>
+            </div>
+          </main>
         </div>
       </div>
     </div>
