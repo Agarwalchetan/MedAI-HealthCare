@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, FileText, Calendar, AlertTriangle, Edit, Trash2 } from 'lucide-react';
+import { Plus, FileText, AlertTriangle, Edit, Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -23,12 +23,12 @@ const schema = yup.object({
 interface MedicalHistoryFormData {
   condition: string;
   diagnosis: string;
-  treatment: string;
-  medications: string;
-  doctorName: string;
-  hospitalName: string;
+  treatment?: string;
+  medications?: string;
+  doctorName?: string;
+  hospitalName?: string;
   severity: 'low' | 'medium' | 'high';
-  notes: string;
+  notes?: string;
 }
 
 const MedicalHistoryPage: React.FC = () => {
@@ -53,7 +53,7 @@ const MedicalHistoryPage: React.FC = () => {
   const fetchMedicalHistory = async () => {
     try {
       const response = await userAPI.getMedicalHistory();
-      setMedicalHistory(response.data.medicalHistory || []);
+      setMedicalHistory(response.data?.medicalHistory || []);
     } catch (error) {
       console.error('Error fetching medical history:', error);
       toast.error('Failed to load medical history');
@@ -97,13 +97,13 @@ const MedicalHistoryPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <UserNavbar />
+    <div className="h-screen bg-gray-50 flex">
+      <UserSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       
-      <div className="flex">
-        <UserSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <UserNavbar />
         
-        <div className="flex-1 md:ml-64">
+        <main className="flex-1 overflow-y-auto">
           <div className="p-6">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
@@ -317,7 +317,7 @@ const MedicalHistoryPage: React.FC = () => {
               )}
             </div>
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );
