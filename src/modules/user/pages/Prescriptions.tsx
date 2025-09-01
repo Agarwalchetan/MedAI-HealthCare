@@ -19,7 +19,7 @@ const PrescriptionsPage: React.FC = () => {
   const fetchPrescriptions = async () => {
     try {
       const response = await userAPI.getPrescriptions();
-      setPrescriptions(response.data.prescriptions || []);
+      setPrescriptions(response.data?.prescriptions || []);
     } catch (error) {
       console.error('Error fetching prescriptions:', error);
       toast.error('Failed to load prescriptions');
@@ -84,13 +84,13 @@ const PrescriptionsPage: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <UserNavbar />
+    <div className="h-screen bg-gray-50 flex">
+      <UserSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       
-      <div className="flex">
-        <UserSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <UserNavbar />
         
-        <div className="flex-1 md:ml-64">
+        <main className="flex-1 overflow-y-auto">
           <div className="p-6">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
@@ -238,7 +238,7 @@ const PrescriptionsPage: React.FC = () => {
               </div>
             )}
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );

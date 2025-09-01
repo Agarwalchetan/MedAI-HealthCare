@@ -107,13 +107,13 @@ const MedicinesPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <UserNavbar />
+    <div className="h-screen bg-gray-50 flex">
+      <UserSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       
-      <div className="flex">
-        <UserSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <UserNavbar />
         
-        <div className="flex-1 md:ml-64">
+        <main className="flex-1 overflow-y-auto">
           <div className="p-6">
             {/* Header */}
             <div className="mb-6">
@@ -212,7 +212,7 @@ const MedicinesPage: React.FC = () => {
               </div>
             )}
           </div>
-        </div>
+        </main>
       </div>
 
       {/* Medicine Details Modal */}

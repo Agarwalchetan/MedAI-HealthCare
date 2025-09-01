@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { User, Mail, Phone, Calendar, MapPin, Edit3, Save, X } from 'lucide-react';
+import { User, Mail, Phone, Calendar, Edit3, Save, X } from 'lucide-react';
 import { useAuth } from '../../../shared/hooks/useAuth';
 import { userAPI } from '../services/userAPI';
 import toast from 'react-hot-toast';
@@ -49,7 +49,7 @@ const UserProfile: React.FC = () => {
     formState: { errors },
     reset
   } = useForm<ProfileFormData>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(schema) as any,
     defaultValues: {
       fullName: user?.fullName || '',
       age: user?.age || 0,
@@ -88,7 +88,9 @@ const UserProfile: React.FC = () => {
       };
 
       const response = await userAPI.updateProfile(updateData);
-      updateUser(response.data.user);
+      if (response.data?.user) {
+        updateUser(response.data.user);
+      }
       toast.success('Profile updated successfully!');
       setIsEditing(false);
     } catch (error: any) {
@@ -104,13 +106,13 @@ const UserProfile: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <UserNavbar />
+    <div className="h-screen bg-gray-50 flex">
+      <UserSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       
-      <div className="flex">
-        <UserSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <UserNavbar />
         
-        <div className="flex-1 md:ml-64">
+        <main className="flex-1 overflow-y-auto">
           <div className="p-6">
             {/* Header */}
             <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
@@ -413,7 +415,7 @@ const UserProfile: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, FlaskConical, Calendar, Download, Upload, FileText, Eye } from 'lucide-react';
+import { FlaskConical, Calendar, Download, Upload, FileText, Eye } from 'lucide-react';
 import UserNavbar from '../components/UserNavbar';
 import UserSidebar from '../components/UserSidebar';
 import { userAPI } from '../services/userAPI';
@@ -19,7 +19,7 @@ const LabReportsPage: React.FC = () => {
   const fetchLabReports = async () => {
     try {
       const response = await userAPI.getLabReports();
-      setLabReports(response.data.labReports || []);
+      setLabReports(response.data?.labReports || []);
     } catch (error) {
       console.error('Error fetching lab reports:', error);
       toast.error('Failed to load lab reports');
@@ -89,13 +89,13 @@ const LabReportsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <UserNavbar />
+    <div className="h-screen bg-gray-50 flex">
+      <UserSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       
-      <div className="flex">
-        <UserSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <UserNavbar />
         
-        <div className="flex-1 md:ml-64">
+        <main className="flex-1 overflow-y-auto">
           <div className="p-6">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
@@ -311,7 +311,7 @@ const LabReportsPage: React.FC = () => {
               </div>
             )}
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );

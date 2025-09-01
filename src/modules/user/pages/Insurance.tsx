@@ -7,7 +7,6 @@ import UserNavbar from '../components/UserNavbar';
 import UserSidebar from '../components/UserSidebar';
 import { userAPI } from '../services/userAPI';
 import { Insurance } from '../../../shared/types';
-import { useAuth } from '../../../shared/hooks/useAuth';
 import toast from 'react-hot-toast';
 
 const schema = yup.object({
@@ -22,7 +21,7 @@ const schema = yup.object({
 interface InsuranceFormData {
   provider: string;
   policyNumber: string;
-  groupNumber: string;
+  groupNumber?: string;
   validUntil: Date;
   coverageAmount: number;
   deductible: number;
@@ -33,7 +32,6 @@ const InsurancePage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [insurance, setInsurance] = useState<Insurance | null>(null);
-  const { user } = useAuth();
 
   const {
     register,
@@ -51,7 +49,7 @@ const InsurancePage: React.FC = () => {
   const fetchInsurance = async () => {
     try {
       const response = await userAPI.getInsurance();
-      const insuranceData = response.data.insurance;
+      const insuranceData = response.data?.insurance;
       if (insuranceData && insuranceData.provider) {
         setInsurance(insuranceData);
         reset({
@@ -77,7 +75,7 @@ const InsurancePage: React.FC = () => {
       };
 
       const response = await userAPI.updateInsurance(insuranceData);
-      setInsurance(response.data.insurance);
+      setInsurance(response.data?.insurance || null);
       toast.success('Insurance details updated successfully!');
       setIsEditing(false);
     } catch (error: any) {
@@ -95,13 +93,13 @@ const InsurancePage: React.FC = () => {
   const isInsuranceActive = insurance?.isActive && insurance?.validUntil && new Date(insurance.validUntil) > new Date();
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <UserNavbar />
+    <div className="h-screen bg-gray-50 flex">
+      <UserSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       
-      <div className="flex">
-        <UserSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <UserNavbar />
         
-        <div className="flex-1 md:ml-64">
+        <main className="flex-1 overflow-y-auto">
           <div className="p-6">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
@@ -361,7 +359,7 @@ const InsurancePage: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );
