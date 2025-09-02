@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, User, Search, Filter, Plus, Star } from 'lucide-react';
-import Calendar as ReactCalendar from 'react-calendar';
+import ReactCalendar from 'react-calendar';
 import { format } from 'date-fns';
 import UserNavbar from '../components/UserNavbar';
 import UserSidebar from '../components/UserSidebar';
@@ -46,7 +46,7 @@ const AppointmentsPage: React.FC = () => {
   const fetchAppointments = async () => {
     try {
       const response = await userAPI.getAppointments();
-      setAppointments(response.data.appointments || []);
+      setAppointments(response.data?.appointments || []);
     } catch (error) {
       console.error('Error fetching appointments:', error);
     } finally {
@@ -57,7 +57,7 @@ const AppointmentsPage: React.FC = () => {
   const fetchDoctors = async () => {
     try {
       const response = await userAPI.getAvailableDoctors(selectedSpecialization);
-      setDoctors(response.data.doctors || []);
+      setDoctors(response.data?.doctors || []);
     } catch (error) {
       console.error('Error fetching doctors:', error);
     }
@@ -71,7 +71,7 @@ const AppointmentsPage: React.FC = () => {
         selectedDoctor._id, 
         format(selectedDate, 'yyyy-MM-dd')
       );
-      setAvailableSlots(response.data.timeSlots || []);
+      setAvailableSlots(response.data?.timeSlots || []);
     } catch (error) {
       console.error('Error fetching time slots:', error);
     }
@@ -308,7 +308,7 @@ const AppointmentsPage: React.FC = () => {
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-4">Select Date</h3>
                       <ReactCalendar
-                        onChange={setSelectedDate}
+                        onChange={(value) => setSelectedDate(value as Date)}
                         value={selectedDate}
                         minDate={new Date()}
                         className="w-full border border-gray-300 rounded-lg"

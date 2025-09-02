@@ -38,7 +38,9 @@ import ManagerComingSoon from './modules/manager/components/ComingSoon';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, doctor, loading } = useAuth();
+
+  console.log('ProtectedRoute - user:', user, 'doctor:', doctor, 'loading:', loading);
 
   if (loading) {
     return (
@@ -48,10 +50,15 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     );
   }
 
-  if (!user) {
+  // Check if either user or doctor is authenticated
+  const isAuthenticated = !!(user || doctor);
+  
+  if (!isAuthenticated) {
+    console.log('No authentication found, redirecting to /auth');
     return <Navigate to="/auth" replace />;
   }
 
+  console.log('Authentication found, rendering protected content');
   return <>{children}</>;
 };
 
@@ -187,11 +194,7 @@ function App() {
             } />
 
             {/* Protected Doctor Routes */}
-            <Route path="/doctor/dashboard" element={
-              <ProtectedRoute>
-                <DoctorDashboard />
-              </ProtectedRoute>
-            } />
+            <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
 
             {/* Coming Soon Routes */}
             <Route path="/doctor/patients" element={<DoctorComingSoon />} />

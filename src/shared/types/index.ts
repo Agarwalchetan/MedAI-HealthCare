@@ -88,7 +88,8 @@ export interface AuthResponse {
   success: boolean;
   message: string;
   data: {
-    user: User;
+    user?: User;
+    doctor?: Doctor;
     token: string;
   };
 }

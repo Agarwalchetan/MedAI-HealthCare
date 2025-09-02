@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, User, FileText, Pill, FlaskConical, Shield, MapPin, Bot, Cable as Capsule } from 'lucide-react';
+import { Home, User, FileText, Pill, FlaskConical, Shield, MapPin, Bot, Cable as Capsule, Calendar } from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
 
 interface SidebarItem {

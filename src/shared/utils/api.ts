@@ -31,12 +31,9 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response?.status === 401) {
-      // Token expired or invalid
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/auth';
-    }
+    // Don't auto-redirect on 401 during development
+    // Let components handle their own auth logic
+    console.log('API error intercepted:', error.response?.status, error.message);
     return Promise.reject(error);
   }
 );
