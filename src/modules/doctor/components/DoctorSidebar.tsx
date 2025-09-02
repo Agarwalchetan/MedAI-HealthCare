@@ -1,5 +1,14 @@
 import React from 'react';
-import { Home, User, FileText, Pill, FlaskConical, Shield, MapPin, Bot, Cable as Capsule } from 'lucide-react';
+import { 
+  Home, 
+  Users, 
+  Calendar, 
+  Brain, 
+  Pill, 
+  DollarSign, 
+  User, 
+  Stethoscope 
+} from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
 
 interface SidebarItem {
@@ -10,12 +19,12 @@ interface SidebarItem {
   available: boolean;
 }
 
-interface UserSidebarProps {
+interface DoctorSidebarProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
 }
 
-const UserSidebar: React.FC<UserSidebarProps> = ({ isOpen, setIsOpen }) => {
+const DoctorSidebar: React.FC<DoctorSidebarProps> = ({ isOpen, setIsOpen }) => {
   const location = useLocation();
 
   const sidebarItems: SidebarItem[] = [
@@ -23,77 +32,49 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ isOpen, setIsOpen }) => {
       id: 'dashboard',
       name: 'Dashboard',
       icon: <Home className="h-5 w-5" />,
-      path: '/user/dashboard',
+      path: '/doctor/dashboard',
       available: true
     },
     {
-      id: 'ai-chatbot',
-      name: 'AI Diagnosis',
-      icon: <Bot className="h-5 w-5" />,
-      path: '/user/ai-chatbot',
+      id: 'patients',
+      name: 'Patients',
+      icon: <Users className="h-5 w-5" />,
+      path: '/doctor/patients',
       available: true
     },
     {
       id: 'appointments',
       name: 'Appointments',
       icon: <Calendar className="h-5 w-5" />,
-      path: '/user/appointments',
+      path: '/doctor/appointments',
       available: true
     },
     {
-      id: 'health-vault',
-      name: 'Health Vault',
-      icon: <Shield className="h-5 w-5" />,
-      path: '/user/health-vault',
-      available: true
-    },
-    {
-      id: 'medical-history',
-      name: 'Medical History',
-      icon: <FileText className="h-5 w-5" />,
-      path: '/user/medical-history',
+      id: 'ai-diagnosis',
+      name: 'AI Diagnosis',
+      icon: <Brain className="h-5 w-5" />,
+      path: '/doctor/ai-diagnosis',
       available: true
     },
     {
       id: 'prescriptions',
       name: 'Prescriptions',
       icon: <Pill className="h-5 w-5" />,
-      path: '/user/prescriptions',
+      path: '/doctor/prescriptions',
       available: true
     },
     {
-      id: 'lab-reports',
-      name: 'Lab Reports',
-      icon: <FlaskConical className="h-5 w-5" />,
-      path: '/user/lab-reports',
-      available: true
-    },
-    {
-      id: 'insurance',
-      name: 'Insurance',
-      icon: <Shield className="h-5 w-5" />,
-      path: '/user/insurance',
-      available: true
-    },
-    {
-      id: 'paramedics',
-      name: 'Paramedics',
-      icon: <MapPin className="h-5 w-5" />,
-      path: '/user/paramedics',
-      available: true
-    },
-    {
-      id: 'medicines',
-      name: 'Medicines',
-      icon: <Capsule className="h-5 w-5" />,
-      path: '/user/medicines',
+      id: 'earnings',
+      name: 'Earnings',
+      icon: <DollarSign className="h-5 w-5" />,
+      path: '/doctor/earnings',
       available: true
     },
     {
       id: 'profile',
       name: 'Profile',
       icon: <User className="h-5 w-5" />,
-      path: '/user/profile',
+      path: '/doctor/profile',
       available: true
     }
   ];
@@ -117,8 +98,15 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ isOpen, setIsOpen }) => {
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Patient Portal</h2>
-            <p className="text-sm text-gray-500 mt-1">Manage your healthcare</p>
+            <div className="flex items-center space-x-2">
+              <div className="bg-blue-600 text-white p-2 rounded-lg">
+                <Stethoscope className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Doctor Portal</h2>
+                <p className="text-sm text-gray-500">Manage your practice</p>
+              </div>
+            </div>
           </div>
 
           {/* Navigation */}
@@ -152,10 +140,10 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ isOpen, setIsOpen }) => {
           {/* Footer */}
           <div className="p-4 border-t border-gray-200">
             <div className="bg-blue-50 rounded-lg p-4">
-              <h3 className="font-medium text-blue-900 mb-1">Need Help?</h3>
-              <p className="text-sm text-blue-700 mb-2">Contact our support team</p>
+              <h3 className="font-medium text-blue-900 mb-1">Medical Support</h3>
+              <p className="text-sm text-blue-700 mb-2">24/7 technical assistance</p>
               <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">
-                Get Support
+                Contact Support
               </button>
             </div>
           </div>
@@ -165,4 +153,4 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ isOpen, setIsOpen }) => {
   );
 };
 
-export default UserSidebar;
+export default DoctorSidebar;

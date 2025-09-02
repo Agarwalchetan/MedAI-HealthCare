@@ -129,3 +129,155 @@ export interface Paramedic {
   availability: boolean;
   emergencyContact: boolean;
 }
+
+export interface Doctor {
+  _id: string;
+  fullName: string;
+  email: string;
+  specialization: string;
+  licenseNumber: string;
+  experience: number;
+  qualifications: Qualification[];
+  phone: string;
+  address: Address;
+  clinicDetails: ClinicDetails;
+  consultationFee: number;
+  isVerified: boolean;
+  isActive: boolean;
+  rating: Rating;
+  totalPatients: number;
+  totalEarnings: number;
+  subscriptionPlan: 'basic' | 'pro' | 'enterprise';
+  subscriptionExpiry: Date;
+  profilePicture: string;
+  availability: WeeklyAvailability;
+  lastLogin: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Qualification {
+  degree: string;
+  institution: string;
+  year: number;
+}
+
+export interface ClinicDetails {
+  name: string;
+  address: string;
+  phone: string;
+  timings: {
+    start: string;
+    end: string;
+    days: string[];
+  };
+}
+
+export interface Rating {
+  average: number;
+  count: number;
+}
+
+export interface WeeklyAvailability {
+  monday: DayAvailability;
+  tuesday: DayAvailability;
+  wednesday: DayAvailability;
+  thursday: DayAvailability;
+  friday: DayAvailability;
+  saturday: DayAvailability;
+  sunday: DayAvailability;
+}
+
+export interface DayAvailability {
+  start: string;
+  end: string;
+  available: boolean;
+}
+
+export interface Appointment {
+  _id: string;
+  doctor: Doctor | string;
+  patient: User | string;
+  appointmentDate: Date;
+  timeSlot: {
+    start: string;
+    end: string;
+  };
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'rescheduled';
+  type: 'consultation' | 'follow-up' | 'emergency' | 'routine-checkup';
+  symptoms: string;
+  notes: string;
+  diagnosis: string;
+  prescription: string;
+  consultationFee: number;
+  paymentStatus: 'pending' | 'paid' | 'refunded';
+  meetingLink: string;
+  cancelReason: string;
+  rating: {
+    score: number;
+    feedback: string;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface DoctorPrescription {
+  _id: string;
+  doctor: Doctor | string;
+  patient: User | string;
+  appointment: Appointment | string;
+  medications: Medication[];
+  diagnosis: string;
+  symptoms: string;
+  recommendations: string;
+  followUpDate: Date;
+  labTestsRecommended: LabTest[];
+  status: 'active' | 'completed' | 'discontinued';
+  digitalSignature: string;
+  qrCode: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Medication {
+  name: string;
+  dosage: string;
+  frequency: string;
+  duration: string;
+  instructions: string;
+  beforeFood: boolean;
+}
+
+export interface LabTest {
+  testName: string;
+  urgency: 'low' | 'medium' | 'high';
+}
+
+export interface DoctorStats {
+  totalPatients: number;
+  totalAppointments: number;
+  completedAppointments: number;
+  todayAppointments: number;
+  totalPrescriptions: number;
+  totalEarnings: number;
+  rating: Rating;
+}
+
+export interface Earnings {
+  _id: string;
+  doctor: string;
+  appointment: string;
+  patient: string;
+  amount: number;
+  platformFee: number;
+  netAmount: number;
+  paymentMethod: 'card' | 'upi' | 'wallet' | 'cash';
+  transactionId: string;
+  status: 'pending' | 'completed' | 'failed' | 'refunded';
+  payoutStatus: 'pending' | 'processed' | 'failed';
+  payoutDate: Date;
+  month: number;
+  year: number;
+  createdAt: Date;
+  updatedAt: Date;
+}

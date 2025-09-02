@@ -21,6 +21,13 @@ import LabReports from './modules/user/pages/LabReports';
 import Insurance from './modules/user/pages/Insurance';
 import Paramedics from './modules/user/pages/Paramedics';
 import Medicines from './modules/user/pages/Medicines';
+import Appointments from './modules/user/pages/Appointments';
+import HealthVault from './modules/user/pages/HealthVault';
+
+// Doctor Module
+import DoctorLogin from './modules/doctor/pages/DoctorLogin';
+import DoctorSignup from './modules/doctor/pages/DoctorSignup';
+import DoctorDashboard from './modules/doctor/pages/DoctorDashboard';
 
 // Coming Soon Components
 import DoctorComingSoon from './modules/doctor/components/ComingSoon';
@@ -117,6 +124,10 @@ function App() {
             {/* User Authentication Routes */}
             <Route path="/user/login" element={<UserLogin />} />
             <Route path="/user/signup" element={<UserSignup />} />
+            
+            {/* Doctor Authentication Routes */}
+            <Route path="/doctor/login" element={<DoctorLogin />} />
+            <Route path="/doctor/signup" element={<DoctorSignup />} />
 
             {/* Protected User Routes */}
             <Route path="/user/dashboard" element={
@@ -164,9 +175,31 @@ function App() {
                 <Medicines />
               </ProtectedRoute>
             } />
+            <Route path="/user/appointments" element={
+              <ProtectedRoute>
+                <Appointments />
+              </ProtectedRoute>
+            } />
+            <Route path="/user/health-vault" element={
+              <ProtectedRoute>
+                <HealthVault />
+              </ProtectedRoute>
+            } />
+
+            {/* Protected Doctor Routes */}
+            <Route path="/doctor/dashboard" element={
+              <ProtectedRoute>
+                <DoctorDashboard />
+              </ProtectedRoute>
+            } />
 
             {/* Coming Soon Routes */}
-            <Route path="/doctor/*" element={<DoctorComingSoon />} />
+            <Route path="/doctor/patients" element={<DoctorComingSoon />} />
+            <Route path="/doctor/appointments" element={<DoctorComingSoon />} />
+            <Route path="/doctor/ai-diagnosis" element={<DoctorComingSoon />} />
+            <Route path="/doctor/prescriptions" element={<DoctorComingSoon />} />
+            <Route path="/doctor/earnings" element={<DoctorComingSoon />} />
+            <Route path="/doctor/profile" element={<DoctorComingSoon />} />
             <Route path="/lab/*" element={<LabComingSoon />} />
             <Route path="/insurance/*" element={<InsuranceComingSoon />} />
             <Route path="/admin/*" element={<AdminComingSoon />} />

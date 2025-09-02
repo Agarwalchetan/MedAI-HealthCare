@@ -72,4 +72,30 @@ export const userAPI = {
     const response = await api.put('/users/insurance', insuranceData);
     return response.data;
   },
+
+  // Appointments
+  getAppointments: async (): Promise<ApiResponse<{ appointments: Appointment[] }>> => {
+    const response = await api.get('/appointments/my-appointments');
+    return response.data;
+  },
+
+  bookAppointment: async (appointmentData: any): Promise<ApiResponse<{ appointment: Appointment }>> => {
+    const response = await api.post('/appointments/book', appointmentData);
+    return response.data;
+  },
+
+  cancelAppointment: async (appointmentId: string, cancelReason: string): Promise<ApiResponse<{ appointment: Appointment }>> => {
+    const response = await api.put(`/appointments/${appointmentId}/cancel`, { cancelReason });
+    return response.data;
+  },
+
+  getAvailableDoctors: async (specialization?: string): Promise<ApiResponse<{ doctors: Doctor[] }>> => {
+    const response = await api.get(`/appointments/doctors/available${specialization ? `?specialization=${specialization}` : ''}`);
+    return response.data;
+  },
+
+  getAvailableTimeSlots: async (doctorId: string, date: string): Promise<ApiResponse<{ timeSlots: any[] }>> => {
+    const response = await api.get(`/appointments/doctors/${doctorId}/slots?date=${date}`);
+    return response.data;
+  }
 };

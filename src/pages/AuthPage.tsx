@@ -30,8 +30,8 @@ const AuthPage: React.FC = () => {
       title: 'Doctors',
       icon: <Stethoscope className="h-12 w-12" />,
       description: 'Manage patients, schedule appointments, and provide telemedicine consultations.',
-      status: 'coming-soon',
-      path: '#',
+      status: 'available',
+      path: '/doctor/login',
       color: 'from-blue-500 to-blue-600',
       features: ['Patient Management', 'Appointments', 'Telemedicine', 'Prescriptions']
     },

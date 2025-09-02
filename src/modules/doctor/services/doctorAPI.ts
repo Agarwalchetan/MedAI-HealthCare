@@ -1,0 +1,74 @@
+import api from '../../../shared/utils/api';
+import { AuthResponse, ApiResponse, Doctor, Appointment, DoctorPrescription, DoctorStats, Earnings } from '../../../shared/types';
+
+export const doctorAPI = {
+  // Authentication
+  register: async (doctorData: any): Promise<AuthResponse> => {
+    const response = await api.post('/doctors/register', doctorData);
+    return response.data;
+  },
+
+  login: async (email: string, password: string): Promise<AuthResponse> => {
+    const response = await api.post('/doctors/login', { email, password });
+    return response.data;
+  },
+
+  logout: async (): Promise<ApiResponse> => {
+    const response = await api.post('/doctors/logout');
+    return response.data;
+  },
+
+  // Profile management
+  getProfile: async (): Promise<ApiResponse<{ doctor: Doctor }>> => {
+    const response = await api.get('/doctors/profile');
+    return response.data;
+  },
+
+  updateProfile: async (doctorData: Partial<Doctor>): Promise<ApiResponse<{ doctor: Doctor }>> => {
+    const response = await api.put('/doctors/profile', doctorData);
+    return response.data;
+  },
+
+  // Appointments
+  getAppointments: async (status?: string): Promise<ApiResponse<{ appointments: Appointment[] }>> => {
+    const response = await api.get(`/doctors/appointments${status ? `?status=${status}` : ''}`);
+    return response.data;
+  },
+
+  updateAppointmentStatus: async (appointmentId: string, status: string, notes?: string): Promise<ApiResponse<{ appointment: Appointment }>> => {
+    const response = await api.put(`/doctors/appointments/${appointmentId}/status`, { status, notes });
+    return response.data;
+  },
+
+  // Prescriptions
+  getPrescriptions: async (): Promise<ApiResponse<{ prescriptions: DoctorPrescription[] }>> => {
+    const response = await api.get('/doctors/prescriptions');
+    return response.data;
+  },
+
+  createPrescription: async (prescriptionData: Partial<DoctorPrescription>): Promise<ApiResponse<{ prescription: DoctorPrescription }>> => {
+    const response = await api.post('/doctors/prescriptions', prescriptionData);
+    return response.data;
+  },
+
+  // Stats and earnings
+  getStats: async (): Promise<ApiResponse<{ stats: DoctorStats }>> => {
+    const response = await api.get('/doctors/stats');
+    return response.data;
+  },
+
+  getEarnings: async (month?: number, year?: number): Promise<ApiResponse<{ earnings: Earnings[] }>> => {
+    const params = new URLSearchParams();
+    if (month) params.append('month', month.toString());
+    if (year) params.append('year', year.toString());
+    
+    const response = await api.get(`/doctors/earnings?${params.toString()}`);
+    return response.data;
+  },
+
+  // Available doctors (for patients)
+  getAvailableDoctors: async (specialization?: string): Promise<ApiResponse<{ doctors: Doctor[] }>> => {
+    const response = await api.get(`/doctors/available${specialization ? `?specialization=${specialization}` : ''}`);
+    return response.data;
+  }
+};
