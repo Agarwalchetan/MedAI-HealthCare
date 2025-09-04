@@ -7,8 +7,11 @@ import {
   TrendingUp,
   FileText,
   Zap,
-  Target
+  Target,
+  XCircle
 } from 'lucide-react';
+import { format } from 'date-fns';
+import toast from 'react-hot-toast';
 import DoctorNavbar from '../components/DoctorNavbar';
 import DoctorSidebar from '../components/DoctorSidebar';
 import { aiDiagnosisService } from '../services/aiDiagnosisService';
@@ -108,7 +111,7 @@ const DoctorAIDiagnosis: React.FC = () => {
       const reviewData = {
         approved,
         modified: finalDiagnosis !== selectedAnalysis?.aiDiagnosis.primaryCondition,
-        finalDiagnosis: finalDiagnosis || selectedAnalysis?.aiDiagnosis.primaryCondition,
+        finalDiagnosis: finalDiagnosis || selectedAnalysis?.aiDiagnosis.primaryCondition || '',
         notes: doctorNotes
       };
 

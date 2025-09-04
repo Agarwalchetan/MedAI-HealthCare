@@ -4,11 +4,9 @@ import {
   TrendingUp, 
   Calendar, 
   Download,
-  CreditCard,
-  PieChart,
-  BarChart3
+  CreditCard
 } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Cell, Pie } from 'recharts';
 import DoctorNavbar from '../components/DoctorNavbar';
 import DoctorSidebar from '../components/DoctorSidebar';
 import { doctorAPI } from '../services/doctorAPI';
@@ -308,7 +306,7 @@ const DoctorEarnings: React.FC = () => {
                             {new Date(earning.createdAt).toLocaleDateString()}
                           </td>
                           <td className="py-3 px-4 text-sm text-gray-900">
-                            {typeof earning.patient === 'object' ? earning.patient.fullName : 'Patient'}
+                            Patient
                           </td>
                           <td className="py-3 px-4 text-sm text-gray-900">₹{earning.amount}</td>
                           <td className="py-3 px-4 text-sm text-red-600">-₹{earning.platformFee}</td>
