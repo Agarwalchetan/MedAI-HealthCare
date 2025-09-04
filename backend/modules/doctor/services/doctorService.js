@@ -211,4 +211,114 @@ export class DoctorService {
       throw error;
     }
   }
+
+  static async getDoctorPatients(doctorId) {
+    try {
+      // Get patients who have appointments with this doctor
+      const appointments = await Appointment.find({ doctor: doctorId })
+        .populate('patient')
+        .distinct('patient');
+      
+      return appointments;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getPatientHealthVault(doctorId, patientId) {
+    try {
+      // Check if doctor has access to patient's health vault
+      const hasAccess = await this.checkHealthVaultAccess(doctorId, patientId);
+      if (!hasAccess) {
+        throw new Error('Access denied. Please request health vault access.');
+      }
+
+      const patient = await User.findById(patientId);
+      if (!patient) {
+        throw new Error('Patient not found');
+      }
+
+      return {
+        medicalHistory: patient.medicalHistory,
+        prescriptions: patient.prescriptions,
+        labReports: patient.labReports
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async checkHealthVaultAccess(doctorId, patientId) {
+    // Check if doctor has had appointments with patient
+    const appointment = await Appointment.findOne({
+      doctor: doctorId,
+      patient: patientId
+    });
+    
+    return !!appointment;
+  }
+
+  static async requestHealthVaultAccess(doctorId, patientId) {
+    try {
+      // In a real implementation, this would create a request for admin approval
+      // For now, we'll simulate the request
+      console.log(`Doctor ${doctorId} requesting access to patient ${patientId} health vault`);
+      return true;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getHealthVaultRequests(doctorId) {
+    try {
+      // Mock implementation - would fetch from a requests collection
+      return [];
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async generatePrescriptionQR(prescriptionId) {
+    try {
+      const prescription = await Prescription.findById(prescriptionId);
+      if (!prescription) {
+        throw new Error('Prescription not found');
+      }
+
+      // Generate QR code data (would use a QR library in production)
+      const qrData = {
+        prescriptionId,
+        doctorId: prescription.doctor,
+        patientId: prescription.patient,
+        timestamp: new Date().toISOString()
+      };
+
+      // Update prescription with QR code
+      prescription.qrCode = JSON.stringify(qrData);
+      await prescription.save();
+
+      return qrData;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async sendPrescriptionToPharmacy(prescriptionId) {
+    try {
+      const prescription = await Prescription.findById(prescriptionId)
+        .populate('patient', 'fullName phone email')
+        .populate('doctor', 'fullName licenseNumber');
+
+      if (!prescription) {
+        throw new Error('Prescription not found');
+      }
+
+      // In production, this would integrate with pharmacy APIs
+      console.log('Sending prescription to pharmacy:', prescriptionId);
+      
+      return true;
+    } catch (error) {
+      throw error;
+    }
+  }
 }

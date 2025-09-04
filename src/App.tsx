@@ -28,6 +28,12 @@ import HealthVault from './modules/user/pages/HealthVault';
 import DoctorLogin from './modules/doctor/pages/DoctorLogin';
 import DoctorSignup from './modules/doctor/pages/DoctorSignup';
 import DoctorDashboard from './modules/doctor/pages/DoctorDashboard';
+import DoctorPatients from './modules/doctor/pages/DoctorPatients';
+import DoctorAppointments from './modules/doctor/pages/DoctorAppointments';
+import DoctorAIDiagnosis from './modules/doctor/pages/DoctorAIDiagnosis';
+import DoctorPrescriptions from './modules/doctor/pages/DoctorPrescriptions';
+import DoctorEarnings from './modules/doctor/pages/DoctorEarnings';
+import DoctorProfile from './modules/doctor/pages/DoctorProfile';
 
 // Coming Soon Components
 import DoctorComingSoon from './modules/doctor/components/ComingSoon';
@@ -195,14 +201,14 @@ function App() {
 
             {/* Protected Doctor Routes */}
             <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
+            <Route path="/doctor/patients" element={<DoctorPatients />} />
+            <Route path="/doctor/appointments" element={<DoctorAppointments />} />
+            <Route path="/doctor/ai-diagnosis" element={<DoctorAIDiagnosis />} />
+            <Route path="/doctor/prescriptions" element={<DoctorPrescriptions />} />
+            <Route path="/doctor/earnings" element={<DoctorEarnings />} />
+            <Route path="/doctor/profile" element={<DoctorProfile />} />
 
             {/* Coming Soon Routes */}
-            <Route path="/doctor/patients" element={<DoctorComingSoon />} />
-            <Route path="/doctor/appointments" element={<DoctorComingSoon />} />
-            <Route path="/doctor/ai-diagnosis" element={<DoctorComingSoon />} />
-            <Route path="/doctor/prescriptions" element={<DoctorComingSoon />} />
-            <Route path="/doctor/earnings" element={<DoctorComingSoon />} />
-            <Route path="/doctor/profile" element={<DoctorComingSoon />} />
             <Route path="/lab/*" element={<LabComingSoon />} />
             <Route path="/insurance/*" element={<InsuranceComingSoon />} />
             <Route path="/admin/*" element={<AdminComingSoon />} />

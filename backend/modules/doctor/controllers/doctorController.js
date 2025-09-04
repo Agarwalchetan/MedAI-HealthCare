@@ -141,3 +141,62 @@ export const getAvailableDoctors = asyncHandler(async (req, res) => {
     data: { doctors }
   });
 });
+
+export const getDoctorPatients = asyncHandler(async (req, res) => {
+  const patients = await DoctorService.getDoctorPatients(req.user._id);
+  
+  res.status(200).json({
+    success: true,
+    data: { patients }
+  });
+});
+
+export const getPatientHealthVault = asyncHandler(async (req, res) => {
+  const { patientId } = req.params;
+  const healthVault = await DoctorService.getPatientHealthVault(req.user._id, patientId);
+  
+  res.status(200).json({
+    success: true,
+    data: healthVault
+  });
+});
+
+export const requestHealthVaultAccess = asyncHandler(async (req, res) => {
+  const { patientId } = req.params;
+  await DoctorService.requestHealthVaultAccess(req.user._id, patientId);
+  
+  res.status(200).json({
+    success: true,
+    message: 'Health vault access requested successfully'
+  });
+});
+
+export const getHealthVaultRequests = asyncHandler(async (req, res) => {
+  const requests = await DoctorService.getHealthVaultRequests(req.user._id);
+  
+  res.status(200).json({
+    success: true,
+    data: { requests }
+  });
+});
+
+export const generatePrescriptionQR = asyncHandler(async (req, res) => {
+  const { prescriptionId } = req.params;
+  const qrCode = await DoctorService.generatePrescriptionQR(prescriptionId);
+  
+  res.status(200).json({
+    success: true,
+    message: 'QR code generated successfully',
+    data: { qrCode }
+  });
+});
+
+export const sendPrescriptionToPharmacy = asyncHandler(async (req, res) => {
+  const { prescriptionId } = req.params;
+  await DoctorService.sendPrescriptionToPharmacy(prescriptionId);
+  
+  res.status(200).json({
+    success: true,
+    message: 'Prescription sent to pharmacy successfully'
+  });
+});

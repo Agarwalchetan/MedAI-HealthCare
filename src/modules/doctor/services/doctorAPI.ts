@@ -70,5 +70,37 @@ export const doctorAPI = {
   getAvailableDoctors: async (specialization?: string): Promise<ApiResponse<{ doctors: Doctor[] }>> => {
     const response = await api.get(`/doctors/available${specialization ? `?specialization=${specialization}` : ''}`);
     return response.data;
+  },
+
+  // Patient management
+  getPatients: async (): Promise<ApiResponse<{ patients: User[] }>> => {
+    const response = await api.get('/doctors/patients');
+    return response.data;
+  },
+
+  getPatientHealthVault: async (patientId: string): Promise<ApiResponse<{ medicalHistory: any[], prescriptions: any[], labReports: any[] }>> => {
+    const response = await api.get(`/doctors/patients/${patientId}/health-vault`);
+    return response.data;
+  },
+
+  requestHealthVaultAccess: async (patientId: string): Promise<ApiResponse> => {
+    const response = await api.post(`/doctors/patients/${patientId}/request-access`);
+    return response.data;
+  },
+
+  getHealthVaultAccessRequests: async (): Promise<ApiResponse<{ requests: any[] }>> => {
+    const response = await api.get('/doctors/health-vault-requests');
+    return response.data;
+  },
+
+  // Prescription management
+  generatePrescriptionQR: async (prescriptionId: string): Promise<ApiResponse> => {
+    const response = await api.post(`/doctors/prescriptions/${prescriptionId}/qr`);
+    return response.data;
+  },
+
+  sendPrescriptionToPharmacy: async (prescriptionId: string): Promise<ApiResponse> => {
+    const response = await api.post(`/doctors/prescriptions/${prescriptionId}/send-pharmacy`);
+    return response.data;
   }
 };

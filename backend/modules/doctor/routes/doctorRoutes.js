@@ -11,7 +11,13 @@ import {
   getDoctorPrescriptions,
   getDoctorEarnings,
   getDoctorStats,
-  getAvailableDoctors
+  getAvailableDoctors,
+  getDoctorPatients,
+  getPatientHealthVault,
+  requestHealthVaultAccess,
+  getHealthVaultRequests,
+  generatePrescriptionQR,
+  sendPrescriptionToPharmacy
 } from '../controllers/doctorController.js';
 import { authenticate } from '../../../middlewares/authMiddleware.js';
 import { 
@@ -48,5 +54,15 @@ router.post('/prescriptions', validatePrescription, createPrescription);
 // Earnings
 router.get('/earnings', getDoctorEarnings);
 router.get('/stats', getDoctorStats);
+
+// Patient management
+router.get('/patients', getDoctorPatients);
+router.get('/patients/:patientId/health-vault', getPatientHealthVault);
+router.post('/patients/:patientId/request-access', requestHealthVaultAccess);
+router.get('/health-vault-requests', getHealthVaultRequests);
+
+// Prescription features
+router.post('/prescriptions/:prescriptionId/qr', generatePrescriptionQR);
+router.post('/prescriptions/:prescriptionId/send-pharmacy', sendPrescriptionToPharmacy);
 
 export default router;
