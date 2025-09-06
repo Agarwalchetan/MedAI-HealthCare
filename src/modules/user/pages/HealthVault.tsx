@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Pill, FlaskConical, Calendar, Download, Eye, Shield } from 'lucide-react';
+import { FileText, Pill, FlaskConical, Download, Eye, Shield, Upload } from 'lucide-react';
 import UserNavbar from '../components/UserNavbar';
 import UserSidebar from '../components/UserSidebar';
 import { userAPI } from '../services/userAPI';
 import { MedicalHistory, Prescription, LabReport } from '../../../shared/types';
+import { FileUploadModal } from './HealthVault/Components';
 
 const HealthVault: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -12,6 +13,7 @@ const HealthVault: React.FC = () => {
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [labReports, setLabReports] = useState<LabReport[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   useEffect(() => {
     fetchHealthVaultData();
@@ -25,9 +27,9 @@ const HealthVault: React.FC = () => {
         userAPI.getLabReports()
       ]);
 
-      setMedicalHistory(medicalResponse.data.medicalHistory || []);
-      setPrescriptions(prescriptionsResponse.data.prescriptions || []);
-      setLabReports(labReportsResponse.data.labReports || []);
+      setMedicalHistory(medicalResponse.data?.medicalHistory || []);
+      setPrescriptions(prescriptionsResponse.data?.prescriptions || []);
+      setLabReports(labReportsResponse.data?.labReports || []);
     } catch (error) {
       console.error('Error fetching health vault data:', error);
     } finally {
@@ -41,6 +43,14 @@ const HealthVault: React.FC = () => {
     { id: 'prescriptions', name: 'Prescriptions', icon: <Pill className="h-4 w-4" /> },
     { id: 'lab-reports', name: 'Lab Reports', icon: <FlaskConical className="h-4 w-4" /> }
   ];
+
+  const handleSaveExtractedData = (extractedText: string) => {
+    // TODO: later we will implement it to save data
+    console.log('Saving extracted text:', extractedText);
+    alert('Extracted text saved successfully!');
+    // for refresh
+    fetchHealthVaultData();
+  };
 
   const renderOverview = () => (
     <div className="space-y-6">
@@ -75,7 +85,7 @@ const HealthVault: React.FC = () => {
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 text-white">
         <h3 className="text-lg font-semibold mb-2">Health Vault Security</h3>
         <p className="text-blue-100 mb-4">
-          Your health data is encrypted and securely stored. Only you and authorized healthcare providers 
+          Your health data is encrypted and securely stored. Only you and authorized healthcare providers
           can access your medical information.
         </p>
         <div className="flex items-center space-x-4 text-sm">
@@ -143,9 +153,8 @@ const HealthVault: React.FC = () => {
                 </div>
               </div>
               <div className="flex items-center space-x-2">
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  prescription.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                }`}>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${prescription.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                  }`}>
                   {prescription.isActive ? 'Active' : 'Completed'}
                 </span>
                 <button className="text-blue-600 hover:text-blue-700">
@@ -197,16 +206,25 @@ const HealthVault: React.FC = () => {
   return (
     <div className="h-screen bg-gray-50 flex">
       <UserSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
-      
+
       <div className="flex-1 flex flex-col overflow-hidden">
         <UserNavbar />
-        
+
         <main className="flex-1 overflow-y-auto">
           <div className="p-6">
             {/* Header */}
-            <div className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-900">Health Vault</h1>
-              <p className="text-gray-600 mt-1">Your complete medical history in one secure place</p>
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Health Vault</h1>
+                <p className="text-gray-600 mt-1">Your complete medical history in one secure place</p>
+              </div>
+              <button
+                onClick={() => setShowUploadModal(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center space-x-2"
+              >
+                <Upload className="h-4 w-4" />
+                <span>Upload Report</span>
+              </button>
             </div>
 
             {/* Tabs */}
@@ -217,11 +235,10 @@ const HealthVault: React.FC = () => {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center space-x-2 py-4 border-b-2 font-medium text-sm transition-colors duration-200 ${
-                        activeTab === tab.id
-                          ? 'border-blue-500 text-blue-600'
-                          : 'border-transparent text-gray-500 hover:text-gray-700'
-                      }`}
+                      className={`flex items-center space-x-2 py-4 border-b-2 font-medium text-sm transition-colors duration-200 ${activeTab === tab.id
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                        }`}
                     >
                       {tab.icon}
                       <span>{tab.name}</span>
@@ -249,6 +266,13 @@ const HealthVault: React.FC = () => {
           </div>
         </main>
       </div>
+
+      {/* for upload modal */}
+      <FileUploadModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        onSave={handleSaveExtractedData}
+      />
     </div>
   );
 };

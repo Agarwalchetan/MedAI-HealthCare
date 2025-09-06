@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Loader, Heart, Mic, MicOff, Play, Pause } from 'lucide-react';
 import UserNavbar from '../components/UserNavbar';
 import UserSidebar from '../components/UserSidebar';
+import { transcribeAudio, textToSpeech, stopMediaStream } from './AIChatbot/deepgram';
 
 interface Message {
   id: string;
@@ -24,6 +25,7 @@ const AIChatbot: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [currentStream, setCurrentStream] = useState<MediaStream | null>(null);
   const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -96,12 +98,16 @@ const AIChatbot: React.FC = () => {
 
       recorder.onstop = async () => {
         const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        await transcribeAudio(audioBlob);
-        stream.getTracks().forEach(track => track.stop());
+        await handleTranscription(audioBlob);
+        if (currentStream) {
+          stopMediaStream(currentStream);
+          setCurrentStream(null);
+        }
       };
 
       recorder.start();
       setMediaRecorder(recorder);
+      setCurrentStream(stream);
       setIsRecording(true);
     } catch (error) {
       console.error('Error starting recording:', error);
@@ -117,44 +123,17 @@ const AIChatbot: React.FC = () => {
     }
   };
 
-  const transcribeAudio = async (audioBlob: Blob) => {
+  const handleTranscription = async (audioBlob: Blob) => {
     try {
       setIsLoading(true);
+      const result = await transcribeAudio(audioBlob);
 
-      // Check if API key is available
-      const apiKey = import.meta.env.VITE_DEEPGRAM_API_KEY || process.env.REACT_APP_DEEPGRAM_API_KEY;
-      if (!apiKey) {
-        throw new Error('Deepgram API key not found');
-      }
-      console.log('API key:', apiKey);
-
-      const response = await fetch('https://api.deepgram.com/v1/listen?model=nova-2&language=en&smart_format=true', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Token ${apiKey}`,
-        },
-        body: audioBlob
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Deepgram API error:', response.status, errorText);
-        throw new Error(`API request failed: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('Deepgram response:', data);
-
-      const transcript = data.results?.channels?.[0]?.alternatives?.[0]?.transcript;
-
-      if (transcript && transcript.trim()) {
-        setInputMessage(transcript);
+      if (result.transcript) {
+        setInputMessage(result.transcript);
         // Automatically send the transcribed message
         setTimeout(() => {
-          handleSendMessage(transcript);
+          handleSendMessage(result.transcript);
         }, 100);
-      } else {
-        alert('No speech detected. Please try again.');
       }
     } catch (error) {
       console.error('Error transcribing audio:', error);
@@ -172,7 +151,7 @@ const AIChatbot: React.FC = () => {
     }
   };
 
-  const textToSpeech = async (text: string, messageId: string) => {
+  const handleTextToSpeech = async (text: string, messageId: string) => {
     try {
       // Stop any currently playing audio
       if (currentAudio) {
@@ -189,30 +168,8 @@ const AIChatbot: React.FC = () => {
 
       setPlayingMessageId(messageId);
 
-      // Get API key
-      const apiKey = import.meta.env.VITE_DEEPGRAM_API_KEY || process.env.REACT_APP_DEEPGRAM_API_KEY;
-      if (!apiKey) {
-        throw new Error('Deepgram API key not found');
-      }
-
-      const response = await fetch('https://api.deepgram.com/v1/speak?model=aura-asteria-en', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Token ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text: text
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`TTS API request failed: ${response.status}`);
-      }
-
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
+      const result = await textToSpeech(text);
+      const { audioUrl, audio } = result;
 
       audio.onended = () => {
         setPlayingMessageId(null);
@@ -232,7 +189,7 @@ const AIChatbot: React.FC = () => {
       console.error('Error with text-to-speech:', error);
       setPlayingMessageId(null);
       setCurrentAudio(null);
-      alert(`Error playing audio: ${error.message}`);
+      alert(`Error playing audio: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -307,7 +264,7 @@ const AIChatbot: React.FC = () => {
                               </p>
                               {message.sender === 'ai' && (
                                 <button
-                                  onClick={() => textToSpeech(message.text, message.id)}
+                                  onClick={() => handleTextToSpeech(message.text, message.id)}
                                   className="ml-2 p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
                                   title="Play audio"
                                 >
