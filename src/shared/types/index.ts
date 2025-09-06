@@ -102,7 +102,7 @@ export interface ApiResponse<T = any> {
 }
 
 export interface Medicine {
-  id: string;
+  id: number;
   name: string;
   genericName: string;
   manufacturer: string;
@@ -116,7 +116,7 @@ export interface Medicine {
   sideEffects: string[];
   contraindications: string[];
   uses: string[];
-  image: string;
+  image?: string;
 }
 
 export interface Paramedic {

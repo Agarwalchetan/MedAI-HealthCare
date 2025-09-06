@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Cable as Capsule, Info, ShoppingCart, Star, Filter } from 'lucide-react';
 import UserNavbar from '../components/UserNavbar';
 import UserSidebar from '../components/UserSidebar';
@@ -10,88 +10,67 @@ const MedicinesPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [medicines, setMedicines] = useState<Medicine[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<string[]>(['all']);
 
-  const categories = [
-    'all',
-    'pain-relief',
-    'antibiotics',
-    'diabetes',
-    'heart-conditions',
-    'respiratory',
-    'digestive',
-    'vitamins'
-  ];
-
-  const medicines: Medicine[] = [
-    {
-      id: '1',
-      name: 'Paracetamol',
-      genericName: 'Acetaminophen',
-      manufacturer: 'Generic Pharma',
-      category: 'pain-relief',
-      description: 'Pain reliever and fever reducer commonly used for headaches, muscle aches, and fever.',
-      dosageForm: 'Tablet',
-      strength: '500mg',
-      price: 25.50,
-      availability: true,
-      prescriptionRequired: false,
-      sideEffects: ['Nausea', 'Allergic reactions (rare)', 'Liver damage (with overdose)'],
-      contraindications: ['Severe liver disease', 'Alcohol dependency'],
-      uses: ['Headache', 'Fever', 'Muscle pain', 'Arthritis pain'],
-      image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
-    },
-    {
-      id: '2',
-      name: 'Amoxicillin',
-      genericName: 'Amoxicillin',
-      manufacturer: 'Antibiotic Labs',
-      category: 'antibiotics',
-      description: 'Broad-spectrum antibiotic used to treat various bacterial infections.',
-      dosageForm: 'Capsule',
-      strength: '250mg',
-      price: 89.99,
-      availability: true,
-      prescriptionRequired: true,
-      sideEffects: ['Diarrhea', 'Nausea', 'Skin rash', 'Allergic reactions'],
-      contraindications: ['Penicillin allergy', 'Severe kidney disease'],
-      uses: ['Respiratory infections', 'Urinary tract infections', 'Skin infections', 'Dental infections'],
-      image: 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
-    },
-    {
-      id: '3',
-      name: 'Metformin',
-      genericName: 'Metformin HCl',
-      manufacturer: 'Diabetes Care Inc',
-      category: 'diabetes',
-      description: 'First-line medication for type 2 diabetes that helps control blood sugar levels.',
-      dosageForm: 'Tablet',
-      strength: '500mg',
-      price: 156.75,
-      availability: true,
-      prescriptionRequired: true,
-      sideEffects: ['Gastrointestinal upset', 'Diarrhea', 'Metallic taste', 'Vitamin B12 deficiency'],
-      contraindications: ['Severe kidney disease', 'Severe liver disease', 'Heart failure'],
-      uses: ['Type 2 diabetes', 'Polycystic ovary syndrome', 'Insulin resistance'],
-      image: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
-    },
-    {
-      id: '4',
-      name: 'Vitamin D3',
-      genericName: 'Cholecalciferol',
-      manufacturer: 'VitaHealth',
-      category: 'vitamins',
-      description: 'Essential vitamin supplement for bone health and immune system support.',
-      dosageForm: 'Soft Gel',
-      strength: '1000 IU',
-      price: 34.99,
-      availability: true,
-      prescriptionRequired: false,
-      sideEffects: ['Hypercalcemia (with overdose)', 'Kidney stones (rare)', 'Nausea (rare)'],
-      contraindications: ['Hypercalcemia', 'Severe kidney disease'],
-      uses: ['Vitamin D deficiency', 'Bone health', 'Immune support', 'Seasonal depression'],
-      image: 'https://images.unsplash.com/photo-1550572017-ded7d14ce745?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+  // Function to parse JSON string fields into arrays
+  const parseJsonField = (field: string): string[] => {
+    try {
+      // Remove outer quotes and parse as JSON
+      const cleanField = field.replace(/^["']|["']$/g, '');
+      return JSON.parse(cleanField);
+    } catch {
+      // If parsing fails, split by comma as fallback
+      return field.replace(/[\[\]"']/g, '').split(',').map(item => item.trim());
     }
-  ];
+  };
+
+  // Function to fetch medicines from JSON file
+  const fetchMedicines = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/Data/medicine.json');
+      const data = await response.json();
+      
+      // Transform the data to match our Medicine interface
+      const transformedMedicines: Medicine[] = data.map((medicine: any) => ({
+        id: medicine.id,
+        name: medicine.name,
+        genericName: medicine.genericName,
+        manufacturer: medicine.manufacturer,
+        category: medicine.category,
+        description: medicine.description,
+        dosageForm: medicine.dosageForm,
+        strength: medicine.strength,
+        price: medicine.price,
+        availability: medicine.availability,
+        prescriptionRequired: medicine.prescriptionRequired,
+        sideEffects: parseJsonField(medicine.sideEffects),
+        contraindications: parseJsonField(medicine.contraindications),
+        uses: parseJsonField(medicine.uses),
+        // Only include image if it exists and is not empty
+        ...(medicine.image && medicine.image.trim() !== '' && { image: medicine.image })
+      }));
+      
+      setMedicines(transformedMedicines);
+      
+      // Extract unique categories from the data
+      const uniqueCategories = ['all', ...new Set(transformedMedicines.map(medicine => medicine.category))];
+      setCategories(uniqueCategories);
+    } catch (error) {
+      console.error('Error fetching medicines:', error);
+      // Fallback to empty array if fetch fails
+      setMedicines([]);
+      setCategories(['all']);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMedicines();
+  }, []);
 
   const filteredMedicines = medicines.filter(medicine => {
     const matchesSearch = medicine.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -153,63 +132,80 @@ const MedicinesPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Medicines Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredMedicines.map((medicine) => (
-                <div
-                  key={medicine.id}
-                  onClick={() => handleMedicineClick(medicine)}
-                  className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-all duration-200 cursor-pointer transform hover:scale-105"
-                >
-                  <div className="relative mb-4">
-                    <img
-                      src={medicine.image}
-                      alt={medicine.name}
-                      className="w-full h-32 object-cover rounded-lg"
-                    />
-                    {medicine.prescriptionRequired && (
-                      <span className="absolute top-2 right-2 bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
-                        Prescription Required
-                      </span>
-                    )}
-                  </div>
-
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">{medicine.name}</h3>
-                  <p className="text-sm text-gray-600 mb-2">{medicine.genericName}</p>
-                  <p className="text-sm text-gray-500 mb-3 line-clamp-2">{medicine.description}</p>
-
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-lg font-bold text-green-600">₹{medicine.price}</span>
-                    <div className="flex items-center space-x-1">
-                      <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                      <span className="text-sm text-gray-600">4.5</span>
-                    </div>
-                  </div>
-
-                  <div className="flex space-x-2">
-                    <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                      {medicine.dosageForm}
-                    </span>
-                    <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
-                      {medicine.strength}
-                    </span>
-                  </div>
-
-                  <button className="w-full mt-4 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2">
-                    <Info className="h-4 w-4" />
-                    <span>View Details</span>
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            {/* No Results */}
-            {filteredMedicines.length === 0 && (
+            {/* Loading State */}
+            {loading ? (
               <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-                <Capsule className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Medicines Found</h3>
-                <p className="text-gray-500">Try adjusting your search terms or category filter.</p>
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Loading Medicines...</h3>
+                <p className="text-gray-500">Please wait while we fetch the medicine database.</p>
               </div>
+            ) : (
+              <>
+                {/* Medicines Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredMedicines.map((medicine) => (
+                    <div
+                      key={medicine.id}
+                      onClick={() => handleMedicineClick(medicine)}
+                      className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-all duration-200 cursor-pointer transform hover:scale-105"
+                    >
+                      <div className="relative mb-4">
+                        {medicine.image ? (
+                          <img
+                            src={medicine.image}
+                            alt={medicine.name}
+                            className="w-full h-32 object-cover rounded-lg"
+                          />
+                        ) : (
+                          <div className="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center">
+                            <Capsule className="h-8 w-8 text-gray-400" />
+                          </div>
+                        )}
+                        {medicine.prescriptionRequired && (
+                          <span className="absolute top-2 right-2 bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                            Prescription Required
+                          </span>
+                        )}
+                      </div>
+
+                      <h3 className="text-lg font-semibold text-gray-900 mb-1">{medicine.name}</h3>
+                      <p className="text-sm text-gray-600 mb-2">{medicine.genericName}</p>
+                      <p className="text-sm text-gray-500 mb-3 line-clamp-2">{medicine.description}</p>
+
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-lg font-bold text-green-600">₹{medicine.price}</span>
+                        <div className="flex items-center space-x-1">
+                          <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                          <span className="text-sm text-gray-600">4.5</span>
+                        </div>
+                      </div>
+
+                      <div className="flex space-x-2">
+                        <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                          {medicine.dosageForm}
+                        </span>
+                        <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
+                          {medicine.strength}
+                        </span>
+                      </div>
+
+                      <button className="w-full mt-4 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2">
+                        <Info className="h-4 w-4" />
+                        <span>View Details</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* No Results */}
+                {filteredMedicines.length === 0 && (
+                  <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+                    <Capsule className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Medicines Found</h3>
+                    <p className="text-gray-500">Try adjusting your search terms or category filter.</p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </main>
@@ -235,11 +231,17 @@ const MedicinesPage: React.FC = () => {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div>
-                  <img
-                    src={selectedMedicine.image}
-                    alt={selectedMedicine.name}
-                    className="w-full h-64 object-cover rounded-lg mb-6"
-                  />
+                  {selectedMedicine.image ? (
+                    <img
+                      src={selectedMedicine.image}
+                      alt={selectedMedicine.name}
+                      className="w-full h-64 object-cover rounded-lg mb-6"
+                    />
+                  ) : (
+                    <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center mb-6">
+                      <Capsule className="h-16 w-16 text-gray-400" />
+                    </div>
+                  )}
                   
                   <div className="space-y-4">
                     <div>
