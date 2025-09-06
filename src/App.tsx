@@ -39,8 +39,19 @@ import DoctorProfile from './modules/doctor/pages/DoctorProfile';
 import DoctorComingSoon from './modules/doctor/components/ComingSoon';
 import LabComingSoon from './modules/lab/components/ComingSoon';
 import InsuranceComingSoon from './modules/insurance/components/ComingSoon';
-import AdminComingSoon from './modules/admin/components/ComingSoon';
 import ManagerComingSoon from './modules/manager/components/ComingSoon';
+
+// Admin Module
+import AdminLogin from './modules/admin/pages/AdminLogin';
+import AdminDashboard from './modules/admin/pages/AdminDashboard';
+import ManageUsers from './modules/admin/pages/ManageUsers';
+import ManageDoctors from './modules/admin/pages/ManageDoctors';
+import ManageMedicines from './modules/admin/pages/ManageMedicines';
+import AdminAppointments from './modules/admin/pages/AdminAppointments';
+import AdminAnalytics from './modules/admin/pages/AdminAnalytics';
+import AdminNotifications from './modules/admin/pages/AdminNotifications';
+import AdminSettings from './modules/admin/pages/AdminSettings';
+import AdminComingSoon from './modules/admin/components/ComingSoon';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -142,6 +153,9 @@ function App() {
             <Route path="/doctor/login" element={<DoctorLogin />} />
             <Route path="/doctor/signup" element={<DoctorSignup />} />
 
+            {/* Admin Authentication Routes */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+
             {/* Protected User Routes */}
             <Route path="/user/dashboard" element={
               <ProtectedRoute>
@@ -208,10 +222,21 @@ function App() {
             <Route path="/doctor/earnings" element={<DoctorEarnings />} />
             <Route path="/doctor/profile" element={<DoctorProfile />} />
 
+            {/* Admin Routes */}
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/manage-users" element={<ManageUsers />} />
+            <Route path="/admin/manage-doctors" element={<ManageDoctors />} />
+            <Route path="/admin/manage-medicines" element={<ManageMedicines />} />
+            <Route path="/admin/appointments" element={<AdminAppointments />} />
+            <Route path="/admin/analytics" element={<AdminAnalytics />} />
+            <Route path="/admin/notifications" element={<AdminNotifications />} />
+            <Route path="/admin/settings" element={<AdminSettings />} />
+            <Route path="/admin/manage-labs" element={<AdminComingSoon />} />
+            <Route path="/admin/manage-insurance" element={<AdminComingSoon />} />
+
             {/* Coming Soon Routes */}
             <Route path="/lab/*" element={<LabComingSoon />} />
             <Route path="/insurance/*" element={<InsuranceComingSoon />} />
-            <Route path="/admin/*" element={<AdminComingSoon />} />
             <Route path="/manager/*" element={<ManagerComingSoon />} />
 
             {/* Catch all route */}

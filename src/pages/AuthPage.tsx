@@ -50,8 +50,8 @@ const AuthPage: React.FC = () => {
       title: 'Administrators',
       icon: <Settings className="h-12 w-12" />,
       description: 'System administration, user management, and platform analytics dashboard.',
-      status: 'coming-soon',
-      path: '#',
+      status: 'available',
+      path: '/admin/login',
       color: 'from-gray-500 to-gray-600',
       features: ['User Management', 'Analytics', 'Security', 'Platform Config']
     }

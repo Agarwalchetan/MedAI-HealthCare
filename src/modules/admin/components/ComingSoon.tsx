@@ -4,9 +4,9 @@ import ComingSoon from '../../../shared/components/ComingSoon';
 const AdminComingSoon: React.FC = () => {
   return (
     <ComingSoon
-      title="Admin Panel Coming Soon"
-      description="Comprehensive system administration dashboard with user management across all roles, platform analytics, security monitoring, and configuration tools. Administrators will have complete oversight and control over the entire healthcare platform."
-      phase="Phase 5 Development"
+      title="Admin Feature Coming Soon"
+      description="This specific admin feature is currently under development. The main admin portal with dashboard, user management, and doctor approvals is available. Additional features like lab and insurance management are being added in future phases."
+      phase="Phase 5 Development - Partial Implementation"
     />
   );
 };
