@@ -16,7 +16,7 @@ const ParamedicsPage: React.FC = () => {
   const [searchLocation, setSearchLocation] = useState('');
   const [selectedService, setSelectedService] = useState('all');
   const [paramedics, setParamedics] = useState<Paramedic[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<{ latitude: number, longitude: number } | null>(null);
   const [locationPermission, setLocationPermission] = useState<'granted' | 'denied' | 'pending'>('pending');
@@ -38,15 +38,12 @@ const ParamedicsPage: React.FC = () => {
     'nursing'
   ];
 
-  // Load nearby hospitals 
+  // Check API configuration on mount but don't load hospitals automatically
   useEffect(() => {
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
     const isConfigured = !!apiKey && apiKey !== 'YOUR_API_KEY_HERE';
 
-    if (isConfigured) {
-      loadNearbyHospitals();
-    } else {
-      setLoading(false);
+    if (!isConfigured) {
       setError('Google Maps API key is not configured. Please add VITE_GOOGLE_MAPS_API_KEY to your .env file.');
     }
   }, []);
@@ -434,20 +431,33 @@ const ParamedicsPage: React.FC = () => {
           {!loading && filteredParamedics.length === 0 && !error && (
             <div className="bg-white rounded-xl shadow-sm p-12 text-center">
               <MapPin className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No Hospitals Found</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {userLocation ? "No Hospitals Found" : "Find Nearby Medical Services"}
+              </h3>
               <p className="text-gray-500 mb-4">
                 {userLocation
                   ? "No medical facilities found in your area. Try expanding your search radius or adjusting filters."
-                  : "Please allow location access to find nearby hospitals and medical services."
+                  : "Click 'Use My Location' to find nearby hospitals and medical services, or search by location name."
                 }
               </p>
               <div className="flex gap-3 justify-center">
                 <button
                   type="button"
-                  onClick={loadNearbyHospitals}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                  onClick={handleUseMyLocation}
+                  disabled={loading}
+                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {userLocation ? 'Refresh Results' : 'Get Location'}
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Locating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Navigation className="h-4 w-4" />
+                      <span>Use My Location</span>
+                    </>
+                  )}
                 </button>
                 {userLocation && (
                   <button
