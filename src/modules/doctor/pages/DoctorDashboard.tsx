@@ -43,7 +43,7 @@ const DoctorDashboard: React.FC = () => {
         doctorAPI.getStats(),
         doctorAPI.getAppointments('pending')
       ]);
-
+      
       if (statsResponse.data?.stats) {
         setStats(statsResponse.data.stats);
       }

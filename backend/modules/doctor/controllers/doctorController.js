@@ -76,6 +76,7 @@ export const getDoctorAppointments = asyncHandler(async (req, res) => {
   });
 });
 
+
 export const updateAppointmentStatus = asyncHandler(async (req, res) => {
   const { appointmentId } = req.params;
   const { status, notes } = req.body;
@@ -88,6 +89,22 @@ export const updateAppointmentStatus = asyncHandler(async (req, res) => {
     data: { appointment }
   });
 });
+
+export const updateAvailability=asyncHandler(async(req,res)=>{
+const {availability}=req.body;
+
+const availabilityData = await DoctorService.updateAvailability(req.user._id,availability)
+
+ res.status(200).json({
+    success: true,
+    message: 'availabilityData updated successfully',
+    data: { availabilityData }
+  });
+})
+
+
+
+
 
 export const createPrescription = asyncHandler(async (req, res) => {
   const prescriptionData = {
@@ -124,6 +141,7 @@ export const getDoctorEarnings = asyncHandler(async (req, res) => {
 });
 
 export const getDoctorStats = asyncHandler(async (req, res) => {
+  
   const stats = await DoctorService.getDoctorStats(req.user._id);
   
   res.status(200).json({

@@ -44,7 +44,7 @@ export const getAvailableTimeSlots = asyncHandler(async (req, res) => {
   const { date } = req.query;
   
   const timeSlots = await AppointmentService.getAvailableTimeSlots(doctorId, date);
-  
+ 
   res.status(200).json({
     success: true,
     data: { timeSlots }

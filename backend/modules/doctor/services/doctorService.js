@@ -117,6 +117,39 @@ export class DoctorService {
     }
   }
 
+
+  static async updateAvailability(doctorId,availbility){
+try {
+ const availabilityObj = {};
+availbility.forEach(item => {
+  const dayKey = item.day.toLowerCase(); // e.g., 'monday'
+  availabilityObj[dayKey] = {
+    start: item.start,
+    end: item.end,
+    available: item.available
+  };
+});
+
+  const doctor = await Doctor.findByIdAndUpdate(
+        doctorId, 
+        { availability: availabilityObj }, 
+        { new: true, runValidators: true }
+      );
+      const availabilityData =doctor.availability
+      if (!availabilityData) {
+        throw new Error('Availability not updated');
+      }
+
+      await doctor.save()
+
+
+      return availabilityData;
+  
+} catch (error) {
+   throw error;
+}
+  }
+
   static async createPrescription(prescriptionData) {
     try {
       const prescription = new Prescription(prescriptionData);
@@ -169,6 +202,7 @@ export class DoctorService {
   static async getDoctorStats(doctorId) {
     try {
       const doctor = await Doctor.findById(doctorId);
+     
       const totalAppointments = await Appointment.countDocuments({ doctor: doctorId });
       const completedAppointments = await Appointment.countDocuments({ 
         doctor: doctorId, 
@@ -193,19 +227,36 @@ export class DoctorService {
         rating: doctor.rating
       };
     } catch (error) {
-      throw error;
+      throw error
     }
   }
 
-  static async getAvailableDoctors(specialization = null) {
+  static async getAvailableDoctors(search = null) {
     try {
-      const query = { isVerified: true, isActive: true };
-      if (specialization) query.specialization = specialization;
+      // const query = { isVerified: true, isActive: true };
+      // if (specialization) query.specialization = specialization;
+      
+      // const doctors = await Doctor.find(query)
+      //   .select('fullName specialization consultationFee rating experience clinicDetails')
+      //   .sort({ 'rating.average': -1 });
+      
+    
 
-      const doctors = await Doctor.find(query)
+const keyword=search ? {
+    $or:[
+{
+    name:{ $regex :search , $options:"i"}
+}
+,{specialization:{ $regex :search , $options:"i"}}
+    ]
+
+}:{}
+
+      const doctors = await Doctor.find(keyword)
         .select('fullName specialization consultationFee rating experience clinicDetails')
         .sort({ 'rating.average': -1 });
-      
+
+
       return doctors;
     } catch (error) {
       throw error;

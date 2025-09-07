@@ -1,5 +1,5 @@
 import api from '../../../shared/utils/api';
-import { AuthResponse, ApiResponse, User, MedicalHistory, Prescription, LabReport, Insurance } from '../../../shared/types';
+import { AuthResponse, ApiResponse, User, MedicalHistory, Prescription, LabReport, Insurance, Appointment ,Doctor} from '../../../shared/types';
 
 export const userAPI = {
   // Authentication
@@ -96,6 +96,8 @@ export const userAPI = {
 
   getAvailableTimeSlots: async (doctorId: string, date: string): Promise<ApiResponse<{ timeSlots: any[] }>> => {
     const response = await api.get(`/appointments/doctors/${doctorId}/slots?date=${date}`);
+    console.log("response Data",response.data) 
+    
     return response.data;
   }
 };

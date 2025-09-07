@@ -53,10 +53,10 @@ export class AppointmentService {
       if (!doctor) {
         throw new Error('Doctor not found');
       }
-
-      const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'lowercase' });
+console.log("doctor : " ,doctor )
+      const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
       const availability = doctor.availability[dayName];
-      
+
       if (!availability || !availability.available) {
         return [];
       }
@@ -89,7 +89,7 @@ export class AppointmentService {
           });
         }
       }
-      
+      // console.log(slots);
       return slots;
     } catch (error) {
       throw error;

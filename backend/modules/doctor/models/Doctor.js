@@ -96,8 +96,8 @@ const doctorSchema = new mongoose.Schema({
     default: true
   },
   rating: {
-    average: { type: Number, default: 0 },
-    count: { type: Number, default: 0 }
+    average: { type: Number, default: 3 },
+    count: { type: Number, default: 3 }
   },
   totalPatients: {
     type: Number,
