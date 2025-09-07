@@ -138,6 +138,20 @@ const doctorSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Create approval workflow when doctor is created
+doctorSchema.post('save', async function(doc) {
+  if (this.isNew) {
+    try {
+      const { DoctorApprovalWorkflow } = await import('../../admin/utils/doctorApprovalWorkflow.js');
+      await DoctorApprovalWorkflow.initiateDoctorApproval(doc._id);
+    } catch (error) {
+      console.error('Error initiating doctor approval workflow:', error);
+    }
+  }
+}, {
+  timestamps: true
+});
+
 // Hash password before saving
 doctorSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();

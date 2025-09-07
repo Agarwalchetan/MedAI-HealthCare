@@ -9,6 +9,8 @@ import { errorHandler } from './middlewares/errorHandler.js';
 import userRoutes from './modules/user/routes/userRoutes.js';
 import doctorRoutes from './modules/doctor/routes/doctorRoutes.js';
 import appointmentRoutes from './modules/user/routes/appointmentRoutes.js';
+import adminRoutes from './modules/admin/routes/adminRoutes.js';
+import aiRoutes from './modules/ai/routes/aiRoutes.js';
 
 // Load environment variables from project root
 dotenv.config({ path: '../.env' });
@@ -52,6 +54,8 @@ app.get('/api/health', (req, res) => {
 app.use('/api/users', userRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/appointments', appointmentRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/ai', aiRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

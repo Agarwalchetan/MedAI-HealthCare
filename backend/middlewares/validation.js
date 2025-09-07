@@ -159,6 +159,22 @@ export const validatePrescription = (req, res, next) => {
   next();
 };
 
+export const validateAdminLogin = (req, res, next) => {
+  const schema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().required()
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.details[0].message
+    });
+  }
+  next();
+};
+
 export const validateAppointmentBooking = (req, res, next) => {
   const schema = Joi.object({
     doctor: Joi.string().required(),

@@ -1,9 +1,13 @@
 import mongoose from 'mongoose';
+import { seedAdminData } from '../modules/admin/utils/seedAdmin.js';
 
 export const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGODB_URI);
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    
+    // Seed admin data on first connection
+    await seedAdminData();
   } catch (error) {
     console.error(`❌ Database connection error: ${error.message}`);
     process.exit(1);
