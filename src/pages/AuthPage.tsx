@@ -52,7 +52,7 @@ const AuthPage: React.FC = () => {
       description: 'System administration, user management, and platform analytics dashboard.',
       status: 'available',
       path: '/admin/login',
-      color: 'from-gray-500 to-gray-600',
+      color: 'from-red-500 to-red-600',
       features: ['User Management', 'Analytics', 'Security', 'Platform Config']
     }
   ];
