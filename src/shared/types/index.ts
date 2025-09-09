@@ -157,6 +157,15 @@ export interface Doctor {
   updatedAt: Date;
 }
 
+
+export interface DayAvailability {
+  day: string;        // e.g. "Monday"
+  available: boolean; // checkbox state
+  start: string;      // "09:00"
+  end: string;        // "17:00"
+}
+
+
 export interface Qualification {
   degree: string;
   institution: string;

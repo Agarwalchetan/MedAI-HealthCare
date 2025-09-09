@@ -35,9 +35,11 @@ router.use(authenticate); // All routes below require authentication
 router.get('/profile', getUserProfile);
 router.put('/profile', validateProfileUpdate, updateUserProfile);
 
+
 // Medical history
 router.get('/medical-history', getMedicalHistory);
 router.post('/medical-history', addMedicalHistory);
+
 
 // Prescriptions
 router.get('/prescriptions', getPrescriptions);

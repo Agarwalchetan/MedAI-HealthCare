@@ -17,7 +17,8 @@ import {
   requestHealthVaultAccess,
   getHealthVaultRequests,
   generatePrescriptionQR,
-  sendPrescriptionToPharmacy
+  sendPrescriptionToPharmacy,
+  updateAvailability
 } from '../controllers/doctorController.js';
 import { authenticate } from '../../../middlewares/authMiddleware.js';
 import { 
@@ -46,6 +47,9 @@ router.put('/profile', updateDoctorProfile);
 // Appointments
 router.get('/appointments', getDoctorAppointments);
 router.put('/appointments/:appointmentId/status', updateAppointmentStatus);
+
+//Availability 
+router.post('/updateAvailability', updateAvailability);
 
 // Prescriptions
 router.get('/prescriptions', getDoctorPrescriptions);

@@ -1,5 +1,6 @@
 import api from '../../../shared/utils/api';
-import { AuthResponse, ApiResponse, Doctor, Appointment, DoctorPrescription, DoctorStats, Earnings } from '../../../shared/types';
+import { AuthResponse, ApiResponse, Doctor, Appointment, DoctorPrescription, DoctorStats, Earnings, User, DayAvailability } from '../../../shared/types';
+
 
 export const doctorAPI = {
   // Authentication
@@ -32,6 +33,7 @@ export const doctorAPI = {
   // Appointments
   getAppointments: async (status?: string): Promise<ApiResponse<{ appointments: Appointment[] }>> => {
     const response = await api.get(`/doctors/appointments${status ? `?status=${status}` : ''}`);
+  console.log("response Data: ",response.data)
     return response.data;
   },
 
@@ -39,6 +41,14 @@ export const doctorAPI = {
     const response = await api.put(`/doctors/appointments/${appointmentId}/status`, { status, notes });
     return response.data;
   },
+
+  // Availability 
+  updateAvailability:async(availability:DayAvailability[]):Promise<ApiResponse>=>{
+   
+    const response=await api.post('/doctors/updateAvailability',{availability});
+    return response.data;
+  },
+
 
   // Prescriptions
   getPrescriptions: async (): Promise<ApiResponse<{ prescriptions: DoctorPrescription[] }>> => {
@@ -50,10 +60,11 @@ export const doctorAPI = {
     const response = await api.post('/doctors/prescriptions', prescriptionData);
     return response.data;
   },
-
+ 
   // Stats and earnings
   getStats: async (): Promise<ApiResponse<{ stats: DoctorStats }>> => {
-    const response = await api.get('/doctors/stats');
+    const response = await api.get(`/doctors/stats`);
+ 
     return response.data;
   },
 
@@ -74,7 +85,7 @@ export const doctorAPI = {
 
   // Patient management
   getPatients: async (): Promise<ApiResponse<{ patients: User[] }>> => {
-    const response = await api.get('/doctors/patients');
+    const response = await api.get(`/doctors/patients`);
     return response.data;
   },
 

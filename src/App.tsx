@@ -94,7 +94,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
 function App() {
   return (
-    <AuthProvider>
+    // <AuthProvider>
       <Router>
         <div className="App">
           <Toaster
@@ -244,7 +244,7 @@ function App() {
           </Routes>
         </div>
       </Router>
-    </AuthProvider>
+    // </AuthProvider>
   );
 }
 

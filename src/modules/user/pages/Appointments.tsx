@@ -20,6 +20,8 @@ const AppointmentsPage: React.FC = () => {
   const [selectedSpecialization, setSelectedSpecialization] = useState('');
   const [symptoms, setSymptoms] = useState('');
   const [loading, setLoading] = useState(true);
+  const [payNow, setPayNow] = useState(false);
+
 
   const specializations = [
     'General Medicine',
@@ -71,6 +73,7 @@ const AppointmentsPage: React.FC = () => {
         selectedDoctor._id, 
         format(selectedDate, 'yyyy-MM-dd')
       );
+      console.log("timeslots",response.data)
       setAvailableSlots(response.data?.timeSlots || []);
     } catch (error) {
       console.error('Error fetching time slots:', error);
@@ -91,6 +94,7 @@ const AppointmentsPage: React.FC = () => {
         symptoms,
         consultationFee: selectedDoctor.consultationFee
       };
+      console.log("appointment Data in handle book appoinment ", appointmentData)
 
       await userAPI.bookAppointment(appointmentData);
       toast.success('Appointment booked successfully!');
@@ -205,6 +209,7 @@ const AppointmentsPage: React.FC = () => {
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Search className="h-5 w-5 text-gray-400" />
                   </div>
+
                   <input
                     type="text"
                     value={searchTerm}
@@ -213,6 +218,7 @@ const AppointmentsPage: React.FC = () => {
                     className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
+               
                 <div className="flex items-center space-x-2">
                   <Filter className="h-5 w-5 text-gray-400" />
                   <select
@@ -318,6 +324,7 @@ const AppointmentsPage: React.FC = () => {
 
                   {/* Time Slots & Booking */}
                   <div>
+                    {/* available time slots */}
                     <div className="mb-6">
                       <h3 className="font-semibold text-gray-900 mb-4">
                         Available Slots - {format(selectedDate, 'MMM dd, yyyy')}
@@ -343,7 +350,7 @@ const AppointmentsPage: React.FC = () => {
                         </div>
                       )}
                     </div>
-
+                        {/* describe symptoms  */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Describe your symptoms
@@ -357,6 +364,20 @@ const AppointmentsPage: React.FC = () => {
                         required
                       />
                     </div>
+                      {/* Pay now check box */}
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id="payNow"
+                              checked={payNow}
+                              onChange={(e) => setPayNow(e.target.checked)}
+                              className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                            <label htmlFor="payNow" className="text-sm text-gray-700">
+                              Pay Now
+                            </label>
+                          </div>
+            
                   </div>
                 </div>
               )}

@@ -1,7 +1,6 @@
 import jwt from 'jsonwebtoken';
 import User from '../modules/user/models/User.js';
 import Doctor from '../modules/doctor/models/Doctor.js';
-import Admin from '../modules/admin/models/Admin.js';
 
 export const authenticate = async (req, res, next) => {
   try {
@@ -15,17 +14,7 @@ export const authenticate = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    let user;
-    
-    // Check user type based on role in token or find in appropriate collection
-    if (decoded.role === 'admin') {
-      user = await Admin.findById(decoded.id).select('-password -twoFactorSecret');
-    } else if (decoded.role === 'doctor') {
-      user = await Doctor.findById(decoded.id).select('-password');
-    } else {
-      user = await User.findById(decoded.id).select('-password');
-    }
+    const user = await User.findById(decoded.id).select('-password')  || await Doctor.findById(decoded.id).select('-password') ;
     
     if (!user) {
       return res.status(401).json({ 

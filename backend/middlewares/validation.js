@@ -179,6 +179,7 @@ export const validateAppointmentBooking = (req, res, next) => {
   const schema = Joi.object({
     doctor: Joi.string().required(),
     appointmentDate: Joi.date().required(),
+    consultationFee:Joi.number().required(),
     timeSlot: Joi.object({
       start: Joi.string().required(),
       end: Joi.string().required()

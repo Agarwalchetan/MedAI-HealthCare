@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { 
   User, 
   Mail, 
@@ -52,6 +52,35 @@ const DoctorProfile: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
   const { doctor } = useAuth();
+
+const availabilityRefs = useRef<Record<
+    string,
+    { checkbox: HTMLInputElement | null; start: HTMLInputElement | null; end: HTMLInputElement | null }
+  >>({});
+
+  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+const handleSave = async () => {
+    const availabilityData = days.map((day) => {
+      const refs = availabilityRefs.current[day];
+      return {
+        day,
+        available: refs.checkbox?.checked || false,
+        start: refs.start?.value || "",
+        end: refs.end?.value || "",
+      };
+    });
+
+   
+
+    try {
+      await doctorAPI.updateAvailability(availabilityData);
+      alert("Availability saved successfully!");
+    } catch (error) {
+      console.error("Error saving availability:", error);
+      alert("Failed to save availability");
+    }
+  };
 
   const {
     register,
@@ -323,7 +352,7 @@ const DoctorProfile: React.FC = () => {
       <h3 className="text-lg font-semibold text-gray-900">Weekly Availability</h3>
       
       <div className="space-y-4">
-        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
+        {days.map((day) => (
           <div key={day} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
             <div className="w-24">
               <span className="font-medium text-gray-900">{day}</span>
@@ -331,7 +360,14 @@ const DoctorProfile: React.FC = () => {
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
+
                 defaultChecked={day !== 'Sunday'}
+                  ref={(el) =>
+                  (availabilityRefs.current[day] = {
+                    ...(availabilityRefs.current[day] || {}),
+                    checkbox: el,
+                  })
+                }
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <span className="text-sm text-gray-600">Available</span>
@@ -340,12 +376,24 @@ const DoctorProfile: React.FC = () => {
               <input
                 type="time"
                 defaultValue="09:00"
+                  ref={(el) =>
+                  (availabilityRefs.current[day] = {
+                    ...(availabilityRefs.current[day] || {}),
+                    start: el,
+                  })
+                }
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               <span className="text-gray-500">to</span>
               <input
                 type="time"
                 defaultValue="17:00"
+                ref={(el) =>
+                  (availabilityRefs.current[day] = {
+                    ...(availabilityRefs.current[day] || {}),
+                    end: el,
+                  })
+                }
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -353,7 +401,7 @@ const DoctorProfile: React.FC = () => {
         ))}
       </div>
 
-      <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200">
+      <button  onClick={handleSave} className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200">
         Save Availability
       </button>
     </div>

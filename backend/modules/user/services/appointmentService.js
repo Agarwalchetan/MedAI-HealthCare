@@ -4,12 +4,15 @@ import User from '../models/User.js';
 
 export class AppointmentService {
   static async createAppointment(appointmentData) {
+    
     try {
-      const appointment = new Appointment(appointmentData);
+   
+      const appointment =  await Appointment.create(appointmentData);
       await appointment.save();
       
       return appointment;
     } catch (error) {
+     
       throw error;
     }
   }
@@ -22,6 +25,7 @@ export class AppointmentService {
       
       return appointments;
     } catch (error) {
+   
       throw error;
     }
   }
@@ -54,9 +58,9 @@ export class AppointmentService {
         throw new Error('Doctor not found');
       }
 
-      const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'lowercase' });
+      const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
       const availability = doctor.availability[dayName];
-      
+
       if (!availability || !availability.available) {
         return [];
       }
@@ -89,7 +93,7 @@ export class AppointmentService {
           });
         }
       }
-      
+      // console.log(slots);
       return slots;
     } catch (error) {
       throw error;

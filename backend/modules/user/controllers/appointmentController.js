@@ -3,13 +3,15 @@ import { DoctorService } from '../../doctor/services/doctorService.js';
 import { asyncHandler } from '../../../middlewares/errorHandler.js';
 
 export const bookAppointment = asyncHandler(async (req, res) => {
+
   const appointmentData = {
     ...req.body,
     patient: req.user._id
   };
+
   
   const appointment = await AppointmentService.createAppointment(appointmentData);
-  
+ 
   res.status(201).json({
     success: true,
     message: 'Appointment booked successfully',
@@ -44,7 +46,7 @@ export const getAvailableTimeSlots = asyncHandler(async (req, res) => {
   const { date } = req.query;
   
   const timeSlots = await AppointmentService.getAvailableTimeSlots(doctorId, date);
-  
+ 
   res.status(200).json({
     success: true,
     data: { timeSlots }

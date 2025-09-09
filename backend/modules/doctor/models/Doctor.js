@@ -90,14 +90,14 @@ const doctorSchema = new mongoose.Schema({
   isVerified: {
     type: Boolean,
     default: false
-  },
+  }, 
   isActive: {
     type: Boolean,
     default: true
   },
   rating: {
-    average: { type: Number, default: 0 },
-    count: { type: Number, default: 0 }
+    average: { type: Number, default: 3 },
+    count: { type: Number, default: 3 }
   },
   totalPatients: {
     type: Number,
