@@ -3,26 +3,33 @@ import { Send, Bot, User, Loader, Heart, Mic, MicOff, Play, Pause } from 'lucide
 import UserNavbar from '../components/UserNavbar';
 import UserSidebar from '../components/UserSidebar';
 import { transcribeAudio, textToSpeech, stopMediaStream } from './AIChatbot/deepgram';
+import LanguageSelector from './AIChatbot/translate';
+import { TranslateService } from './AIChatbot/translateService';
 
 interface Message {
   id: string;
   text: string;
+  originalText?: string;
   sender: 'user' | 'ai';
   timestamp: Date;
+  language?: string;
 }
 
 const AIChatbot: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       text: 'Hello! I\'m your AI health assistant. I can help you with preliminary health assessments, symptom analysis, and general health information. How can I assist you today?',
       sender: 'ai',
-      timestamp: new Date()
+      timestamp: new Date(),
+      language: 'en'
     }
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [currentStream, setCurrentStream] = useState<MediaStream | null>(null);
@@ -38,32 +45,107 @@ const AIChatbot: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Translate initial message when language changes
+  useEffect(() => {
+    const translateInitialMessage = async () => {
+      if (messages.length === 1 && selectedLanguage !== 'en') {
+        setIsTranslating(true);
+        try {
+          const initialMessage = messages[0];
+          const translatedText = await TranslateService.translateFromEnglish(
+            'Hello! I\'m your AI health assistant. I can help you with preliminary health assessments, symptom analysis, and general health information. How can I assist you today?',
+            selectedLanguage
+          );
+          
+          setMessages([{
+            ...initialMessage,
+            text: translatedText.translatedText,
+            language: selectedLanguage
+          }]);
+        } catch (error) {
+          console.error('Error translating initial message:', error);
+        } finally {
+          setIsTranslating(false);
+        }
+      } else if (selectedLanguage === 'en' && messages.length === 1) {
+        // Reset to English if switching back
+        const initialMessage = messages[0];
+        setMessages([{
+          ...initialMessage,
+          text: 'Hello! I\'m your AI health assistant. I can help you with preliminary health assessments, symptom analysis, and general health information. How can I assist you today?',
+          language: 'en'
+        }]);
+      }
+    };
+
+    translateInitialMessage();
+  }, [selectedLanguage]);
+
   const handleSendMessage = async (messageText?: string) => {
     const textToSend = messageText || inputMessage;
     if (!textToSend.trim()) return;
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      text: textToSend,
-      sender: 'user',
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
+    setIsTranslating(true);
 
-    // Simulate AI response (In production, this would call your AI service)
-    setTimeout(() => {
+    try {
+      // Store original user message
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        text: textToSend,
+        originalText: textToSend,
+        sender: 'user',
+        timestamp: new Date(),
+        language: selectedLanguage
+      };
+
+      setMessages(prev => [...prev, userMessage]);
+
+      // Translate user input to English if not already in English
+      let englishText = textToSend;
+      if (selectedLanguage !== 'en') {
+        const translationResult = await TranslateService.translateToEnglish(textToSend, selectedLanguage);
+        englishText = translationResult.translatedText;
+      }
+
+      setIsTranslating(false);
+
+      // Generate AI response in English
+      const englishResponse = generateAIResponse(englishText);
+
+      // Translate AI response back to user's language if needed
+      let finalResponse = englishResponse;
+      if (selectedLanguage !== 'en') {
+        setIsTranslating(true);
+        const responseTranslation = await TranslateService.translateFromEnglish(englishResponse, selectedLanguage);
+        finalResponse = responseTranslation.translatedText;
+      }
+
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: generateAIResponse(textToSend),
+        text: finalResponse,
+        originalText: englishResponse,
         sender: 'ai',
-        timestamp: new Date()
+        timestamp: new Date(),
+        language: selectedLanguage
       };
+
       setMessages(prev => [...prev, aiResponse]);
+    } catch (error) {
+      console.error('Error in translation or message processing:', error);
+      const errorMessage: Message = {
+        id: (Date.now() + 2).toString(),
+        text: 'Sorry, I encountered an error while processing your message. Please try again.',
+        sender: 'ai',
+        timestamp: new Date(),
+        language: selectedLanguage
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+      setIsTranslating(false);
+    }
   };
 
   const generateAIResponse = (userInput: string): string => {
@@ -215,8 +297,24 @@ const AIChatbot: React.FC = () => {
             <div className="p-6 h-full flex flex-col">
               {/* Header */}
               <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-900">AI Health Assistant</h1>
-                <p className="text-gray-600 mt-1">Get preliminary health insights and guidance</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-3xl font-bold text-gray-900">AI Health Assistant</h1>
+                    <p className="text-gray-600 mt-1">Get preliminary health insights and guidance</p>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    {isTranslating && (
+                      <div className="flex items-center space-x-2 text-blue-600">
+                        <Loader className="h-4 w-4 animate-spin" />
+                        <span className="text-sm">Translating...</span>
+                      </div>
+                    )}
+                    <LanguageSelector
+                      selectedLanguage={selectedLanguage}
+                      onLanguageChange={setSelectedLanguage}
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Chat Container */}
@@ -282,7 +380,7 @@ const AIChatbot: React.FC = () => {
                     ))}
 
                     {/* Loading indicator */}
-                    {isLoading && (
+                    {(isLoading || isTranslating) && (
                       <div className="flex justify-start">
                         <div className="flex items-start space-x-3">
                           <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-2 rounded-full">
@@ -291,7 +389,9 @@ const AIChatbot: React.FC = () => {
                           <div className="bg-gray-100 px-4 py-3 rounded-2xl">
                             <div className="flex items-center space-x-2">
                               <Loader className="h-4 w-4 animate-spin text-gray-500" />
-                              <span className="text-sm text-gray-500">AI is thinking...</span>
+                              <span className="text-sm text-gray-500">
+                                {isTranslating ? 'Translating...' : 'AI is thinking...'}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -333,7 +433,7 @@ const AIChatbot: React.FC = () => {
                     />
                     <button
                       onClick={handleVoiceToggle}
-                      disabled={isLoading}
+                      disabled={isLoading || isTranslating}
                       className={`p-3 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${isRecording
                         ? 'bg-red-600 hover:bg-red-700 text-white'
                         : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
@@ -343,7 +443,7 @@ const AIChatbot: React.FC = () => {
                     </button>
                     <button
                       onClick={() => handleSendMessage()}
-                      disabled={!inputMessage.trim() || isLoading}
+                      disabled={!inputMessage.trim() || isLoading || isTranslating}
                       className="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Send className="h-5 w-5" />
