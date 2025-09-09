@@ -80,7 +80,10 @@ export const userAPI = {
   },
 
   bookAppointment: async (appointmentData: any): Promise<ApiResponse<{ appointment: Appointment }>> => {
+
+    console.log( "appointment data userApi book appointment : ", appointmentData)
     const response = await api.post('/appointments/book', appointmentData);
+    console.log( "response data userApi book appointment : ", response.data)
     return response.data;
   },
 

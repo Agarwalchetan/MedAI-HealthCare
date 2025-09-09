@@ -4,12 +4,15 @@ import User from '../models/User.js';
 
 export class AppointmentService {
   static async createAppointment(appointmentData) {
+    
     try {
-      const appointment = new Appointment(appointmentData);
+   
+      const appointment =  await Appointment.create(appointmentData);
       await appointment.save();
       
       return appointment;
     } catch (error) {
+     
       throw error;
     }
   }
@@ -22,6 +25,7 @@ export class AppointmentService {
       
       return appointments;
     } catch (error) {
+   
       throw error;
     }
   }
@@ -53,7 +57,7 @@ export class AppointmentService {
       if (!doctor) {
         throw new Error('Doctor not found');
       }
-console.log("doctor : " ,doctor )
+
       const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
       const availability = doctor.availability[dayName];
 

@@ -92,6 +92,7 @@ const AppointmentsPage: React.FC = () => {
         symptoms,
         consultationFee: selectedDoctor.consultationFee
       };
+      console.log("appointment Data in handle book appoinment ", appointmentData)
 
       await userAPI.bookAppointment(appointmentData);
       toast.success('Appointment booked successfully!');
