@@ -74,8 +74,8 @@ const MedicinesPage: React.FC = () => {
 
   const filteredMedicines = medicines.filter(medicine => {
     const matchesSearch = medicine.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         medicine.genericName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         medicine.uses.some(use => use.toLowerCase().includes(searchTerm.toLowerCase()));
+      medicine.genericName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      medicine.uses.some(use => use.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory = selectedCategory === 'all' || medicine.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -88,10 +88,10 @@ const MedicinesPage: React.FC = () => {
   return (
     <div className="h-screen bg-gray-50 flex">
       <UserSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
-      
+
       <div className="flex-1 flex flex-col overflow-hidden">
         <UserNavbar />
-        
+
         <main className="flex-1 overflow-y-auto">
           <div className="p-6">
             {/* Header */}
@@ -231,18 +231,12 @@ const MedicinesPage: React.FC = () => {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div>
-                  {selectedMedicine.image ? (
-                    <img
-                      src={selectedMedicine.image}
-                      alt={selectedMedicine.name}
-                      className="w-full h-64 object-cover rounded-lg mb-6"
-                    />
-                  ) : (
-                    <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center mb-6">
-                      <Capsule className="h-16 w-16 text-gray-400" />
-                    </div>
-                  )}
-                  
+                  <img
+                    src={selectedMedicine.image}
+                    alt={selectedMedicine.name}
+                    className="w-full h-64 object-cover rounded-lg mb-6"
+                  />
+
                   <div className="space-y-4">
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-2">Basic Information</h3>

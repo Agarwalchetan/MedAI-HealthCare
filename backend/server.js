@@ -44,8 +44,8 @@ app.use(cookieParser());
 
 // Health check route
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
+  res.status(200).json({
+    status: 'OK',
     message: 'MedAI Backend is running',
     timestamp: new Date().toISOString()
   });
