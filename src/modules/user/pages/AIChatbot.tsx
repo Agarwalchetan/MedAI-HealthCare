@@ -297,22 +297,24 @@ const AIChatbot: React.FC = () => {
             <div className="p-6 h-full flex flex-col">
               {/* Header */}
               <div className="mb-6">
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex-1">
                     <h1 className="text-3xl font-bold text-gray-900">AI Health Assistant</h1>
                     <p className="text-gray-600 mt-1">Get preliminary health insights and guidance</p>
                   </div>
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center justify-end gap-3 relative">
                     {isTranslating && (
-                      <div className="flex items-center space-x-2 text-blue-600">
+                      <div className="flex items-center space-x-2 text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full">
                         <Loader className="h-4 w-4 animate-spin" />
-                        <span className="text-sm">Translating...</span>
+                        <span className="text-sm font-medium">Translating...</span>
                       </div>
                     )}
-                    <LanguageSelector
-                      selectedLanguage={selectedLanguage}
-                      onLanguageChange={setSelectedLanguage}
-                    />
+                    <div className="relative">
+                      <LanguageSelector
+                        selectedLanguage={selectedLanguage}
+                        onLanguageChange={setSelectedLanguage}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
