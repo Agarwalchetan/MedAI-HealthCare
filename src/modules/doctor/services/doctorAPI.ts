@@ -33,6 +33,7 @@ export const doctorAPI = {
   // Appointments
   getAppointments: async (status?: string): Promise<ApiResponse<{ appointments: Appointment[] }>> => {
     const response = await api.get(`/doctors/appointments${status ? `?status=${status}` : ''}`);
+  console.log("response Data: ",response.data)
     return response.data;
   },
 

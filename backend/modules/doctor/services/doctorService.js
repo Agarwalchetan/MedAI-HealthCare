@@ -89,10 +89,11 @@ export class DoctorService {
       const query = { doctor: doctorId };
       if (status) query.status = status;
 
+ 
       const appointments = await Appointment.find(query)
         .populate('patient', 'fullName email phone age gender')
         .sort({ appointmentDate: 1 });
-      
+
       return appointments;
     } catch (error) {
       throw error;
@@ -101,6 +102,7 @@ export class DoctorService {
 
   static async updateAppointmentStatus(appointmentId, status, notes = '') {
     try {
+     
       const appointment = await Appointment.findByIdAndUpdate(
         appointmentId,
         { status, notes },

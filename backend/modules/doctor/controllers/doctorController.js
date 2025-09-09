@@ -68,6 +68,7 @@ export const updateDoctorProfile = asyncHandler(async (req, res) => {
 
 export const getDoctorAppointments = asyncHandler(async (req, res) => {
   const { status } = req.query;
+ 
   const appointments = await DoctorService.getDoctorAppointments(req.user._id, status);
   
   res.status(200).json({
