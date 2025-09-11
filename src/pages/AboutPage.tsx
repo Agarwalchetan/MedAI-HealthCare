@@ -65,10 +65,10 @@ const AboutPage: React.FC = () => {
     {
       icon: <FlaskConical className="h-8 w-8" />,
       title: 'For Labs',
-      description: 'Streamlined test management, digital report delivery, and seamless integration with patient records.',
-      features: ['Test Management', 'Digital Reports', 'Quality Control', 'Patient Integration'],
+      description: 'Digital report management, quality control systems, and seamless integration with patient health vaults.',
+      features: ['Digital Report Upload', 'Quality Control', 'Patient Integration', 'Analytics Dashboard'],
       color: 'from-purple-500 to-purple-600',
-      status: 'coming-soon'
+      status: 'available'
     },
     {
       icon: <CreditCard className="h-8 w-8" />,

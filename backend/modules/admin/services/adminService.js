@@ -88,6 +88,12 @@ export class AdminService {
           pending: pendingApprovals,
           rejectionRate: await this.calculateDoctorRejectionRate()
         },
+        labs: {
+          total: totalLabs,
+          approved: approvedLabs,
+          pending: totalLabs - approvedLabs,
+          totalReports: totalLabReports
+        },
         appointments: {
           total: totalAppointments,
           today: todayAppointments,
