@@ -64,6 +64,24 @@ const AuthPage: React.FC = () => {
       ]
     },
     {
+      id: 'lab',
+      title: 'Laboratories',
+      subtitle: 'Diagnostic services',
+      icon: <FlaskConical className="h-8 w-8" />,
+      description: 'Manage lab operations, upload reports, and provide diagnostic services to patients and doctors.',
+      status: 'available',
+      path: '/lab/login',
+      color: 'from-purple-600 to-purple-700',
+      features: ['Report Management', 'Quality Control', 'Patient Integration', 'Analytics Dashboard'],
+      stats: '200+ Labs',
+      demoElements: [
+        { icon: FileText, label: 'Digital Reports', delay: 0 },
+        { icon: CheckCircle, label: 'Quality Control', delay: 0.2 },
+        { icon: Users, label: 'Patient Integration', delay: 0.4 },
+        { icon: BarChart3, label: 'Lab Analytics', delay: 0.6 }
+      ]
+    },
+    {
       id: 'guardian',
       title: 'Guardians',
       subtitle: 'Family healthcare management',

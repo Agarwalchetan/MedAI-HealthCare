@@ -41,6 +41,10 @@ import LabComingSoon from './modules/lab/components/ComingSoon';
 import InsuranceComingSoon from './modules/insurance/components/ComingSoon';
 import ManagerComingSoon from './modules/manager/components/ComingSoon';
 
+// Lab Module
+import LabLogin from './modules/lab/pages/LabLogin';
+import LabDashboard from './modules/lab/pages/LabDashboard';
+
 // Admin Module
 import AdminLogin from './modules/admin/pages/AdminLogin';
 import AdminDashboard from './modules/admin/pages/AdminDashboard';
@@ -153,6 +157,9 @@ function App() {
             <Route path="/doctor/login" element={<DoctorLogin />} />
             <Route path="/doctor/signup" element={<DoctorSignup />} />
 
+            {/* Lab Authentication Routes */}
+            <Route path="/lab/login" element={<LabLogin />} />
+
             {/* Admin Authentication Routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
 
@@ -221,6 +228,9 @@ function App() {
             <Route path="/doctor/prescriptions" element={<DoctorPrescriptions />} />
             <Route path="/doctor/earnings" element={<DoctorEarnings />} />
             <Route path="/doctor/profile" element={<DoctorProfile />} />
+
+            {/* Protected Lab Routes */}
+            <Route path="/lab/dashboard" element={<LabDashboard />} />
 
             {/* Admin Routes */}
             <Route path="/admin/dashboard" element={<AdminDashboard />} />

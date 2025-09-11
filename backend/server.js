@@ -11,6 +11,7 @@ import doctorRoutes from './modules/doctor/routes/doctorRoutes.js';
 import appointmentRoutes from './modules/user/routes/appointmentRoutes.js';
 import adminRoutes from './modules/admin/routes/adminRoutes.js';
 import aiRoutes from './modules/ai/routes/aiRoutes.js';
+import labRoutes from './modules/lab/routes/labRoutes.js';
 
 // Load environment variables from project root
 dotenv.config({ path: '../.env' });
@@ -56,6 +57,7 @@ app.use('/api/doctors', doctorRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/labs', labRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import User from '../modules/user/models/User.js';
 import Doctor from '../modules/doctor/models/Doctor.js';
 import Admin from '../modules/admin/models/Admin.js';
+import Lab from '../modules/lab/models/Lab.js';
 
 export const authenticate = async (req, res, next) => {
   try {
@@ -23,6 +24,8 @@ export const authenticate = async (req, res, next) => {
       user = await Admin.findById(decoded.id).select('-password -twoFactorSecret');
     } else if (decoded.role === 'doctor') {
       user = await Doctor.findById(decoded.id).select('-password');
+    } else if (decoded.role === 'lab') {
+      user = await Lab.findById(decoded.id).select('-password');
     } else {
       user = await User.findById(decoded.id).select('-password');
     }
