@@ -19,7 +19,8 @@ import {
   Lock,
   BarChart3,
   Database,
-  Zap
+  Zap,
+  FlaskConical
 } from 'lucide-react';
 
 const AuthPage: React.FC = () => {
