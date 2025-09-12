@@ -6,6 +6,7 @@ import * as yup from 'yup';
 import { Eye, EyeOff, FlaskConical, Mail, Lock } from 'lucide-react';
 import { labAPI } from '../services/labAPI';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../../shared/hooks/useAuth';
 
 const schema = yup.object({
   email: yup.string().email('Invalid email format').required('Email is required'),
@@ -21,6 +22,7 @@ const LabLogin: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { setLabAuth } = useAuth();
 
   const {
     register,
@@ -37,8 +39,7 @@ const LabLogin: React.FC = () => {
       const { lab, token } = response.data || {};
       
       if (lab && token) {
-        localStorage.setItem('token', token);
-        localStorage.setItem('lab', JSON.stringify(lab));
+        setLabAuth(lab, token);
         toast.success('Login successful!');
         navigate('/lab/dashboard');
       } else {
@@ -82,8 +83,7 @@ const LabLogin: React.FC = () => {
         };
         const mockToken = 'mock-lab-jwt-token';
         
-        localStorage.setItem('token', mockToken);
-        localStorage.setItem('lab', JSON.stringify(mockLab));
+        setLabAuth(mockLab, mockToken);
         toast.success('Login successful! (Demo Mode)');
         navigate('/lab/dashboard');
         return;

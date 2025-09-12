@@ -43,7 +43,10 @@ import ManagerComingSoon from './modules/manager/components/ComingSoon';
 
 // Lab Module
 import LabLogin from './modules/lab/pages/LabLogin';
+import LabSignup from './modules/lab/pages/LabSignup';
 import LabDashboard from './modules/lab/pages/LabDashboard';
+import LabUploadReport from './modules/lab/pages/LabUploadReport';
+import ManageLabs from './modules/admin/pages/ManageLabs';
 
 // Admin Module
 import AdminLogin from './modules/admin/pages/AdminLogin';
@@ -59,9 +62,9 @@ import AdminComingSoon from './modules/admin/components/ComingSoon';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, doctor, loading } = useAuth();
+  const { user, doctor, lab, loading } = useAuth();
 
-  console.log('ProtectedRoute - user:', user, 'doctor:', doctor, 'loading:', loading);
+  console.log('ProtectedRoute - user:', user, 'doctor:', doctor, 'lab:', lab, 'loading:', loading);
 
   if (loading) {
     return (
@@ -71,8 +74,8 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     );
   }
 
-  // Check if either user or doctor is authenticated
-  const isAuthenticated = !!(user || doctor);
+  // Check if user, doctor, or lab is authenticated
+  const isAuthenticated = !!(user || doctor || lab);
   
   if (!isAuthenticated) {
     console.log('No authentication found, redirecting to /auth');
@@ -159,6 +162,7 @@ function App() {
 
             {/* Lab Authentication Routes */}
             <Route path="/lab/login" element={<LabLogin />} />
+            <Route path="/lab/signup" element={<LabSignup />} />
 
             {/* Admin Authentication Routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
@@ -231,6 +235,16 @@ function App() {
 
             {/* Protected Lab Routes */}
             <Route path="/lab/dashboard" element={<LabDashboard />} />
+            <Route path="/lab/dashboard" element={
+              <ProtectedRoute>
+                <LabDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/lab/upload-report" element={
+              <ProtectedRoute>
+                <LabUploadReport />
+              </ProtectedRoute>
+            } />
 
             {/* Admin Routes */}
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -241,7 +255,7 @@ function App() {
             <Route path="/admin/analytics" element={<AdminAnalytics />} />
             <Route path="/admin/notifications" element={<AdminNotifications />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
-            <Route path="/admin/manage-labs" element={<AdminComingSoon />} />
+            <Route path="/admin/manage-labs" element={<ManageLabs />} />
             <Route path="/admin/manage-insurance" element={<AdminComingSoon />} />
 
             {/* Coming Soon Routes */}

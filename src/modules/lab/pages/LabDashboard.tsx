@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import { Link } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import LabNavbar from '../components/LabNavbar';
 import LabSidebar from '../components/LabSidebar';
 import { labAPI } from '../services/labAPI';
@@ -24,6 +25,11 @@ const LabDashboard: React.FC = () => {
   // Get lab info from localStorage
   const storedLab = localStorage.getItem('lab');
   const lab = storedLab ? JSON.parse(storedLab) : null;
+  
+  // Redirect if no lab authentication
+  if (!lab) {
+    return <Navigate to="/lab/login" replace />;
+  }
 
   useEffect(() => {
     fetchDashboardData();

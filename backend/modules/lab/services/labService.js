@@ -65,14 +65,6 @@ export class LabService {
         throw new Error('Invalid email or password');
       }
 
-      if (!lab.isApproved) {
-        throw new Error('Lab account is pending approval');
-      }
-
-      if (!lab.isActive) {
-        throw new Error('Lab account is suspended');
-      }
-
       // Update last login
       lab.lastLogin = new Date();
       await lab.save();
@@ -86,8 +78,8 @@ export class LabService {
   static async uploadLabReport(labId, reportData, files) {
     try {
       const lab = await Lab.findById(labId);
-      if (!lab || !lab.isApproved) {
-        throw new Error('Lab not found or not approved');
+      if (!lab) {
+        throw new Error('Lab not found');
       }
 
       // Verify patient exists
@@ -107,17 +99,38 @@ export class LabService {
       // Generate report number
       const reportNumber = LabHelper.generateReportNumber();
 
+      // Process test parameters for abnormal values
+      let processedParameters = [];
+      if (reportData.testParameters) {
+        processedParameters = reportData.testParameters.map(param => {
+          const abnormalCheck = LabHelper.checkAbnormalValues(param.parameter, param.value, param.unit);
+          return {
+            ...param,
+            isAbnormal: abnormalCheck.isAbnormal,
+            flagType: abnormalCheck.flagType
+          };
+        });
+      }
+
       // Create lab report
       const labReport = new LabReport({
         ...reportData,
         reportNumber,
         lab: labId,
+        testParameters: processedParameters,
         files: files.map(file => ({
           fileName: file.originalname,
           fileUrl: file.path,
           fileType: file.mimetype,
           fileSize: file.size
-        }))
+        })),
+        results: {
+          ...reportData.results,
+          summary: reportData.results.summary || LabHelper.generateReportSummary(processedParameters, reportData.testType)
+        },
+        ocrData: {
+          aiAnalysis: LabHelper.generateAIAnalysis(processedParameters, reportData.testType)
+        }
       });
 
       await labReport.save();
@@ -321,142 +334,6 @@ export class LabService {
     }
   }
 
-  static async processOCR(reportId) {
-    try {
-      const report = await LabReport.findById(reportId);
-      if (!report) {
-        throw new Error('Report not found');
-      }
-
-      // Mock OCR processing (in production, integrate with OCR service)
-      const mockOCRData = {
-        extractedText: 'Sample OCR extracted text from lab report',
-        confidence: 0.95,
-        processedDate: new Date(),
-        aiAnalysis: {
-          keyFindings: ['Hemoglobin: 12.5 g/dL', 'WBC: 7200/μL', 'Platelets: 250,000/μL'],
-          riskLevel: 'Low',
-          recommendations: ['Values within normal range', 'Continue regular monitoring']
-        }
-      };
-
-      report.ocrData = mockOCRData;
-      await report.save();
-
-      return mockOCRData;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  static async getAvailableLabs(location = null, testType = null) {
-    try {
-      const query = { isApproved: true, isActive: true };
-      
-      if (testType) {
-        query.services = { $in: [testType] };
-      }
-
-      if (location) {
-        query.$or = [
-          { 'address.city': { $regex: location, $options: 'i' } },
-          { 'address.state': { $regex: location, $options: 'i' } }
-        ];
-      }
-
-      const labs = await Lab.find(query)
-        .select('name contactInfo address services rating operatingHours')
-        .sort({ 'rating.average': -1 });
-
-      return labs;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  static async createLabRequest(requestData) {
-    try {
-      const request = new LabRequest(requestData);
-      await request.save();
-
-      // Log lab request creation
-      await SystemLog.createLog({
-        level: 'info',
-        category: 'lab_management',
-        action: 'lab_request_created',
-        performedBy: {
-          userId: requestData.doctor,
-          userType: 'doctor'
-        },
-        targetEntity: 'user',
-        targetId: requestData.patient,
-        details: {
-          requestId: request._id,
-          testsRequested: request.testsRequested.map(t => t.testName)
-        }
-      });
-
-      return request;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  static async assignLabToRequest(requestId, labId) {
-    try {
-      const request = await LabRequest.findByIdAndUpdate(
-        requestId,
-        { 
-          lab: labId,
-          status: 'Lab Assigned'
-        },
-        { new: true }
-      );
-
-      if (!request) {
-        throw new Error('Lab request not found');
-      }
-
-      return request;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  static async getLabRequests(labId, status = null) {
-    try {
-      const query = { lab: labId };
-      if (status) query.status = status;
-
-      const requests = await LabRequest.find(query)
-        .populate('patient', 'fullName email phone age gender')
-        .populate('doctor', 'fullName specialization')
-        .sort({ requestDate: -1 });
-
-      return requests;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  static async updateLabProfile(labId, updateData) {
-    try {
-      const lab = await Lab.findByIdAndUpdate(
-        labId,
-        updateData,
-        { new: true, runValidators: true }
-      );
-
-      if (!lab) {
-        throw new Error('Lab not found');
-      }
-
-      return lab;
-    } catch (error) {
-      throw error;
-    }
-  }
-
   static async getLabAnalytics(labId, period = 'month') {
     try {
       const now = new Date();
@@ -571,6 +448,186 @@ export class LabService {
     return turnaroundData;
   }
 
+  static async performQualityControl(reportId, qualityData, labId) {
+    try {
+      const report = await LabReport.findOneAndUpdate(
+        { _id: reportId, lab: labId },
+        {
+          qualityControl: {
+            ...qualityData,
+            reviewDate: new Date()
+          }
+        },
+        { new: true }
+      );
+
+      if (!report) {
+        throw new Error('Report not found or access denied');
+      }
+
+      // Log quality control
+      await SystemLog.createLog({
+        level: 'info',
+        category: 'lab_management',
+        action: 'quality_control_performed',
+        performedBy: {
+          userId: labId,
+          userType: 'lab'
+        },
+        targetEntity: 'lab_report',
+        targetId: reportId,
+        details: {
+          qualityScore: qualityData.qualityScore,
+          reviewedBy: qualityData.reviewedBy
+        }
+      });
+
+      return report;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getAvailableLabs(location = null, testType = null) {
+    try {
+      const query = { isApproved: true, isActive: true };
+      
+      if (testType) {
+        query.services = { $in: [testType] };
+      }
+
+      if (location) {
+        query.$or = [
+          { 'address.city': { $regex: location, $options: 'i' } },
+          { 'address.state': { $regex: location, $options: 'i' } }
+        ];
+      }
+
+      const labs = await Lab.find(query)
+        .select('name contactInfo address services rating operatingHours')
+        .sort({ 'rating.average': -1 });
+
+      return labs;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async createLabRequest(requestData) {
+    try {
+      const request = new LabRequest(requestData);
+      await request.save();
+
+      // Log lab request creation
+      await SystemLog.createLog({
+        level: 'info',
+        category: 'lab_management',
+        action: 'lab_request_created',
+        performedBy: {
+          userId: requestData.doctor,
+          userType: 'doctor'
+        },
+        targetEntity: 'user',
+        targetId: requestData.patient,
+        details: {
+          requestId: request._id,
+          testsRequested: request.testsRequested.map(t => t.testName)
+        }
+      });
+
+      return request;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async assignLabToRequest(requestId, labId) {
+    try {
+      const request = await LabRequest.findByIdAndUpdate(
+        requestId,
+        { 
+          lab: labId,
+          status: 'Lab Assigned'
+        },
+        { new: true }
+      );
+
+      if (!request) {
+        throw new Error('Lab request not found');
+      }
+
+      return request;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getLabRequests(labId, status = null) {
+    try {
+      const query = { lab: labId };
+      if (status) query.status = status;
+
+      const requests = await LabRequest.find(query)
+        .populate('patient', 'fullName email phone age gender')
+        .populate('doctor', 'fullName specialization')
+        .sort({ requestDate: -1 });
+
+      return requests;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async updateLabProfile(labId, updateData) {
+    try {
+      const lab = await Lab.findByIdAndUpdate(
+        labId,
+        updateData,
+        { new: true, runValidators: true }
+      );
+
+      if (!lab) {
+        throw new Error('Lab not found');
+      }
+
+      return lab;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getPatientReports(patientId, labId = null) {
+    try {
+      const query = { patient: patientId };
+      if (labId) query.lab = labId;
+
+      const reports = await LabReport.find(query)
+        .populate('lab', 'name contactInfo')
+        .populate('doctor', 'fullName specialization')
+        .sort({ reportDate: -1 });
+
+      return reports;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getDoctorOrderedReports(doctorId, labId = null) {
+    try {
+      const query = { doctor: doctorId };
+      if (labId) query.lab = labId;
+
+      const reports = await LabReport.find(query)
+        .populate('patient', 'fullName email age gender')
+        .populate('lab', 'name')
+        .sort({ reportDate: -1 });
+
+      return reports;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   static async notifyPatientReportReady(reportId) {
     try {
       const report = await LabReport.findById(reportId)
@@ -624,73 +681,29 @@ export class LabService {
     }
   }
 
-  static async getPatientReports(patientId, labId = null) {
+  static async processOCR(reportId) {
     try {
-      const query = { patient: patientId };
-      if (labId) query.lab = labId;
-
-      const reports = await LabReport.find(query)
-        .populate('lab', 'name contactInfo')
-        .populate('doctor', 'fullName specialization')
-        .sort({ reportDate: -1 });
-
-      return reports;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  static async getDoctorOrderedReports(doctorId, labId = null) {
-    try {
-      const query = { doctor: doctorId };
-      if (labId) query.lab = labId;
-
-      const reports = await LabReport.find(query)
-        .populate('patient', 'fullName email age gender')
-        .populate('lab', 'name')
-        .sort({ reportDate: -1 });
-
-      return reports;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  static async performQualityControl(reportId, qualityData, labId) {
-    try {
-      const report = await LabReport.findOneAndUpdate(
-        { _id: reportId, lab: labId },
-        {
-          qualityControl: {
-            ...qualityData,
-            reviewDate: new Date()
-          }
-        },
-        { new: true }
-      );
-
+      const report = await LabReport.findById(reportId);
       if (!report) {
-        throw new Error('Report not found or access denied');
+        throw new Error('Report not found');
       }
 
-      // Log quality control
-      await SystemLog.createLog({
-        level: 'info',
-        category: 'lab_management',
-        action: 'quality_control_performed',
-        performedBy: {
-          userId: labId,
-          userType: 'lab'
-        },
-        targetEntity: 'lab_report',
-        targetId: reportId,
-        details: {
-          qualityScore: qualityData.qualityScore,
-          reviewedBy: qualityData.reviewedBy
+      // Mock OCR processing (in production, integrate with OCR service)
+      const mockOCRData = {
+        extractedText: 'Sample OCR extracted text from lab report',
+        confidence: 0.95,
+        processedDate: new Date(),
+        aiAnalysis: {
+          keyFindings: ['Hemoglobin: 12.5 g/dL', 'WBC: 7200/μL', 'Platelets: 250,000/μL'],
+          riskLevel: 'Low',
+          recommendations: ['Values within normal range', 'Continue regular monitoring']
         }
-      });
+      };
 
-      return report;
+      report.ocrData = mockOCRData;
+      await report.save();
+
+      return mockOCRData;
     } catch (error) {
       throw error;
     }

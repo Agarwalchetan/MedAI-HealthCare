@@ -11,6 +11,7 @@ import { Link, Navigate } from 'react-router-dom';
 import DoctorNavbar from '../components/DoctorNavbar';
 import DoctorSidebar from '../components/DoctorSidebar';
 import { doctorAPI } from '../services/doctorAPI';
+import { labAPI } from '../../lab/services/labAPI';
 import { useAuth } from '../../../shared/hooks/useAuth';
 import { DoctorStats, Appointment } from '../../../shared/types';
 
@@ -39,9 +40,10 @@ const DoctorDashboard: React.FC = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const [statsResponse, appointmentsResponse] = await Promise.all([
+      const [statsResponse, appointmentsResponse, labReportsResponse] = await Promise.all([
         doctorAPI.getStats(),
-        doctorAPI.getAppointments('pending')
+        doctorAPI.getAppointments('pending'),
+        doctorAPI.getOrderedLabReports()
       ]);
 
       if (statsResponse.data?.stats) {

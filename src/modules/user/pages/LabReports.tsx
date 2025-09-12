@@ -3,6 +3,7 @@ import { FlaskConical, Calendar, Download, Upload, FileText, Eye } from 'lucide-
 import UserNavbar from '../components/UserNavbar';
 import UserSidebar from '../components/UserSidebar';
 import { userAPI } from '../services/userAPI';
+import { labAPI } from '../../lab/services/labAPI';
 import { LabReport } from '../../../shared/types';
 import toast from 'react-hot-toast';
 
@@ -14,6 +15,7 @@ const LabReportsPage: React.FC = () => {
 
   useEffect(() => {
     fetchLabReports();
+    fetchLabReportsFromLabs();
   }, []);
 
   const fetchLabReports = async () => {
@@ -25,6 +27,35 @@ const LabReportsPage: React.FC = () => {
       toast.error('Failed to load lab reports');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchLabReportsFromLabs = async () => {
+    try {
+      // Get current user ID from auth context
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user._id) {
+        const response = await labAPI.getPatientReports(user._id);
+        const labReports = response.data?.reports || [];
+        
+        // Convert lab reports to user lab report format
+        const convertedReports = labReports.map(report => ({
+          _id: report._id,
+          testName: report.testName,
+          testType: report.testType,
+          reportDate: report.reportDate,
+          results: report.results?.summary || '',
+          normalRange: report.results?.normalValues || '',
+          labName: report.lab?.name || 'Lab',
+          doctorReferred: report.doctor?.fullName || '',
+          fileUrl: report.files?.[0]?.fileUrl || '',
+          status: report.status.toLowerCase()
+        }));
+        
+        setLabReports(prev => [...prev, ...convertedReports]);
+      }
+    } catch (error) {
+      console.error('Error fetching lab reports from labs:', error);
     }
   };
 

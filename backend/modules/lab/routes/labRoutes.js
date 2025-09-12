@@ -2,6 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import {
   registerLab,
+  registerLab,
   loginLab,
   logoutLab,
   getLabProfile,
@@ -32,7 +33,7 @@ const router = express.Router();
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/lab-reports/');
+    cb(null, './uploads/lab-reports/');
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -55,6 +56,7 @@ const upload = multer({
 
 // Public routes
 router.post('/register', validateLabRegistration, registerLab);
+router.post('/register', validateLabRegistration, registerLab);
 router.post('/login', validateLabLogin, loginLab);
 router.get('/available', getAvailableLabs);
 
@@ -62,28 +64,31 @@ router.get('/available', getAvailableLabs);
 router.post('/logout', logoutLab);
 
 // Protected routes for labs
-router.use(authenticate);
-router.use(authorize('lab'));
+router.use('/profile', authenticate, authorize('lab'));
+router.use('/reports', authenticate, authorize('lab'));
+router.use('/stats', authenticate, authorize('lab'));
+router.use('/analytics', authenticate, authorize('lab'));
+router.use('/requests', authenticate);
 
 // Lab profile management
-router.get('/profile', getLabProfile);
-router.put('/profile', updateLabProfile);
+router.get('/profile', authenticate, authorize('lab'), getLabProfile);
+router.put('/profile', authenticate, authorize('lab'), updateLabProfile);
 
 // Report management
-router.post('/reports/upload', upload.array('reportFiles', 5), validateLabReportUpload, uploadLabReport);
-router.get('/reports', getLabReports);
-router.put('/reports/:reportId/status', updateReportStatus);
-router.post('/reports/:reportId/share-doctor', shareReportWithDoctor);
-router.put('/reports/:reportId/quality-control', validateQualityControl, performQualityControl);
+router.post('/reports/upload', authenticate, authorize('lab'), upload.array('reportFiles', 5), uploadLabReport);
+router.get('/reports', authenticate, authorize('lab'), getLabReports);
+router.put('/reports/:reportId/status', authenticate, authorize('lab'), updateReportStatus);
+router.post('/reports/:reportId/share-doctor', authenticate, authorize('lab'), shareReportWithDoctor);
+router.put('/reports/:reportId/quality-control', authenticate, authorize('lab'), performQualityControl);
 
 // Analytics and stats
-router.get('/stats', getLabStats);
-router.get('/analytics', getLabAnalytics);
+router.get('/stats', authenticate, authorize('lab'), getLabStats);
+router.get('/analytics', authenticate, authorize('lab'), getLabAnalytics);
 
 // Cross-module routes (accessible by doctors/admins)
-router.post('/requests', createLabRequest);
-router.put('/requests/:requestId/assign', assignLabToRequest);
-router.get('/patients/:patientId/reports', getPatientReports);
-router.get('/doctors/:doctorId/reports', getDoctorOrderedReports);
+router.post('/requests', authenticate, createLabRequest);
+router.put('/requests/:requestId/assign', authenticate, assignLabToRequest);
+router.get('/patients/:patientId/reports', authenticate, getPatientReports);
+router.get('/doctors/:doctorId/reports', authenticate, getDoctorOrderedReports);
 
 export default router;

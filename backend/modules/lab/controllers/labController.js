@@ -19,6 +19,20 @@ export const registerLab = asyncHandler(async (req, res) => {
   sendResponse(res, 201, true, 'Lab registered successfully. Approval pending.', { lab, token });
 });
 
+export const registerLab = asyncHandler(async (req, res) => {
+  const lab = await LabService.createLab(req.body);
+  const token = LabService.generateToken(lab._id);
+
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  });
+
+  sendResponse(res, 201, true, 'Lab registered successfully. Approval pending.', { lab, token });
+});
+
 export const loginLab = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   
@@ -52,6 +66,21 @@ export const updateLabProfile = asyncHandler(async (req, res) => {
 
 export const uploadLabReport = asyncHandler(async (req, res) => {
   const files = req.files || [];
+  
+  // Parse JSON fields from form data
+  if (req.body.results && typeof req.body.results === 'string') {
+    req.body.results = JSON.parse(req.body.results);
+  }
+  if (req.body.technician && typeof req.body.technician === 'string') {
+    req.body.technician = JSON.parse(req.body.technician);
+  }
+  if (req.body.pathologist && typeof req.body.pathologist === 'string') {
+    req.body.pathologist = JSON.parse(req.body.pathologist);
+  }
+  if (req.body.testParameters && typeof req.body.testParameters === 'string') {
+    req.body.testParameters = JSON.parse(req.body.testParameters);
+  }
+  
   const report = await LabService.uploadLabReport(req.user._id, req.body, files);
   
   // Process OCR in background

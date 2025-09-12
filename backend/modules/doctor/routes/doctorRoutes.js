@@ -65,4 +65,8 @@ router.get('/health-vault-requests', getHealthVaultRequests);
 router.post('/prescriptions/:prescriptionId/qr', generatePrescriptionQR);
 router.post('/prescriptions/:prescriptionId/send-pharmacy', sendPrescriptionToPharmacy);
 
+// Lab integration
+router.post('/lab-requests', createLabRequest);
+router.get('/lab-reports', getOrderedLabReports);
+
 export default router;

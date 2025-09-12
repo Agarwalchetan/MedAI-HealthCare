@@ -71,7 +71,7 @@ const AuthPage: React.FC = () => {
       icon: <FlaskConical className="h-8 w-8" />,
       description: 'Manage lab operations, upload reports, and provide diagnostic services to patients and doctors.',
       status: 'available',
-      path: '/lab/login',
+      path: '/lab/signup',
       color: 'from-purple-600 to-purple-700',
       features: ['Report Management', 'Quality Control', 'Patient Integration', 'Analytics Dashboard'],
       stats: '200+ Labs',

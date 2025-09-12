@@ -59,60 +59,6 @@ export const validateLabLogin = (req, res, next) => {
   next();
 };
 
-export const validateLabReportUpload = (req, res, next) => {
-  const schema = Joi.object({
-    patient: Joi.string().required(),
-    doctor: Joi.string().optional(),
-    testType: Joi.string().valid(
-      'Blood Test', 'Urine Test', 'X-Ray', 'MRI', 'CT Scan', 
-      'Ultrasound', 'ECG', 'Pathology', 'Microbiology', 
-      'Biochemistry', 'Hematology', 'Immunology', 'Molecular Diagnostics', 'Other'
-    ).required(),
-    testName: Joi.string().required(),
-    testCategory: Joi.string().valid('Routine', 'Emergency', 'Specialized', 'Screening').optional(),
-    sampleCollectionDate: Joi.date().required(),
-    expectedDeliveryDate: Joi.date().optional(),
-    priority: Joi.string().valid('Low', 'Medium', 'High', 'Urgent').optional(),
-    results: Joi.object({
-      summary: Joi.string().required(),
-      findings: Joi.string().optional(),
-      normalValues: Joi.string().optional(),
-      abnormalValues: Joi.string().optional(),
-      interpretation: Joi.string().optional(),
-      recommendations: Joi.string().optional()
-    }).required(),
-    testParameters: Joi.array().items(
-      Joi.object({
-        parameter: Joi.string().required(),
-        value: Joi.string().required(),
-        unit: Joi.string().required(),
-        normalRange: Joi.string().required(),
-        isAbnormal: Joi.boolean().optional(),
-        flagType: Joi.string().valid('High', 'Low', 'Critical', 'Normal').optional()
-      })
-    ).optional(),
-    technician: Joi.object({
-      name: Joi.string().required(),
-      id: Joi.string().required(),
-      signature: Joi.string().optional()
-    }).required(),
-    pathologist: Joi.object({
-      name: Joi.string().required(),
-      licenseNumber: Joi.string().required(),
-      signature: Joi.string().optional()
-    }).optional()
-  });
-
-  const { error } = schema.validate(req.body);
-  if (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.details[0].message
-    });
-  }
-  next();
-};
-
 export const validateQualityControl = (req, res, next) => {
   const schema = Joi.object({
     reviewed: Joi.boolean().required(),

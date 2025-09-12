@@ -3,6 +3,7 @@ import { LogOut, User, Bell, Settings, Menu, FlaskConical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { labAPI } from '../services/labAPI';
+import { useAuth } from '../../../shared/hooks/useAuth';
 
 interface LabNavbarProps {
   onMenuToggle?: () => void;
@@ -11,12 +12,12 @@ interface LabNavbarProps {
 
 const LabNavbar: React.FC<LabNavbarProps> = ({ onMenuToggle, lab }) => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const handleLogout = async () => {
     try {
       await labAPI.logout();
-      localStorage.removeItem('token');
-      localStorage.removeItem('lab');
+      logout();
       toast.success('Logged out successfully');
       navigate('/');
     } catch (error) {

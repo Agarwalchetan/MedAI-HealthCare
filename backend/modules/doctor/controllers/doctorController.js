@@ -1,5 +1,6 @@
 import { DoctorService } from '../services/doctorService.js';
 import { asyncHandler } from '../../../middlewares/errorHandler.js';
+import { LabService } from '../../lab/services/labService.js';
 
 export const registerDoctor = asyncHandler(async (req, res) => {
   const doctor = await DoctorService.createDoctor(req.body);
@@ -198,5 +199,29 @@ export const sendPrescriptionToPharmacy = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: 'Prescription sent to pharmacy successfully'
+  });
+});
+
+export const createLabRequest = asyncHandler(async (req, res) => {
+  const labRequestData = {
+    ...req.body,
+    doctor: req.user._id
+  };
+  
+  const request = await LabService.createLabRequest(labRequestData);
+  
+  res.status(201).json({
+    success: true,
+    message: 'Lab request created successfully',
+    data: { request }
+  });
+});
+
+export const getOrderedLabReports = asyncHandler(async (req, res) => {
+  const reports = await LabService.getDoctorOrderedReports(req.user._id);
+  
+  res.status(200).json({
+    success: true,
+    data: { reports }
   });
 });

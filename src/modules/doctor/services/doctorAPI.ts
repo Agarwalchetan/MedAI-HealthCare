@@ -102,5 +102,16 @@ export const doctorAPI = {
   sendPrescriptionToPharmacy: async (prescriptionId: string): Promise<ApiResponse> => {
     const response = await api.post(`/doctors/prescriptions/${prescriptionId}/send-pharmacy`);
     return response.data;
+  },
+
+  // Lab integration
+  orderLabTests: async (labRequestData: any): Promise<ApiResponse> => {
+    const response = await api.post('/labs/requests', labRequestData);
+    return response.data;
+  },
+
+  getOrderedLabReports: async (): Promise<ApiResponse<{ reports: any[] }>> => {
+    const response = await api.get('/labs/doctors/my-reports');
+    return response.data;
   }
 };
