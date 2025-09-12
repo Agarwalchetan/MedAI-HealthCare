@@ -1,15 +1,17 @@
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import Lab from '../models/Lab.js';
 import LabReport from '../models/LabReport.js';
 import LabRequest from '../models/LabRequest.js';
 import User from '../../user/models/User.js';
 import Doctor from '../../doctor/models/Doctor.js';
 import SystemLog from '../../admin/models/SystemLog.js';
+import { LabHelper } from '../utils/labHelper.js';
 
 export class LabService {
   static generateToken(labId) {
     return jwt.sign({ id: labId, role: 'lab' }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES_IN
+      expiresIn: process.env.JWT_EXPIRES_IN || '7d'
     });
   }
 
@@ -102,9 +104,13 @@ export class LabService {
         }
       }
 
+      // Generate report number
+      const reportNumber = LabHelper.generateReportNumber();
+
       // Create lab report
       const labReport = new LabReport({
         ...reportData,
+        reportNumber,
         lab: labId,
         files: files.map(file => ({
           fileName: file.originalname,
@@ -122,21 +128,9 @@ export class LabService {
       });
 
       // Add to patient's health vault
+      const healthVaultEntry = LabHelper.formatReportForHealthVault(labReport);
       await User.findByIdAndUpdate(reportData.patient, {
-        $push: {
-          labReports: {
-            _id: labReport._id,
-            testName: labReport.testName,
-            testType: labReport.testType,
-            reportDate: labReport.reportDate,
-            results: labReport.results.summary,
-            normalRange: labReport.results.normalValues,
-            labName: lab.name,
-            doctorReferred: reportData.doctor ? 'Doctor' : '',
-            fileUrl: labReport.files[0]?.fileUrl || '',
-            status: 'completed'
-          }
-        }
+        $push: { labReports: healthVaultEntry }
       });
 
       // Log report upload
@@ -179,7 +173,8 @@ export class LabService {
       const reports = await LabReport.find(query)
         .populate('patient', 'fullName email phone age gender')
         .populate('doctor', 'fullName specialization')
-        .sort({ reportDate: -1 });
+        .sort({ reportDate: -1 })
+        .limit(filters.limit || 50);
 
       return reports;
     } catch (error) {
@@ -296,7 +291,7 @@ export class LabService {
         todayReports,
         averageTurnaround,
         rating: lab.rating,
-        totalRevenue: lab.totalRevenue
+        totalRevenue: lab.totalRevenue || 0
       };
     } catch (error) {
       throw error;
@@ -312,7 +307,7 @@ export class LabService {
         actualDeliveryDate: { $exists: true }
       });
 
-      if (completedReports.length === 0) return 0;
+      if (completedReports.length === 0) return 24; // Default 24 hours
 
       const totalTime = completedReports.reduce((sum, report) => {
         const turnaround = report.actualDeliveryDate - report.sampleCollectionDate;
@@ -322,7 +317,7 @@ export class LabService {
       // Return average in hours
       return Math.round(totalTime / completedReports.length / (1000 * 60 * 60));
     } catch (error) {
-      return 0;
+      return 24;
     }
   }
 

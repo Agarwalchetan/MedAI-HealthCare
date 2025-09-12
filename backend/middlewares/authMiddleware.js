@@ -44,6 +44,14 @@ export const authenticate = async (req, res, next) => {
       });
     }
     req.user = user;
+    // Additional check for lab approval
+    if (decoded.role === 'lab' && !user.isApproved) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Lab account is pending approval.' 
+      });
+    }
+
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);

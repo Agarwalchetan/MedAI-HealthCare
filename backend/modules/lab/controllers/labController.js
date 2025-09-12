@@ -71,7 +71,8 @@ export const getLabReports = asyncHandler(async (req, res) => {
     status: req.query.status,
     testType: req.query.testType,
     startDate: req.query.startDate,
-    endDate: req.query.endDate
+    endDate: req.query.endDate,
+    limit: req.query.limit
   };
 
   const reports = await LabService.getLabReports(req.user._id, filters);
@@ -123,6 +124,12 @@ export const getAvailableLabs = asyncHandler(async (req, res) => {
 export const createLabRequest = asyncHandler(async (req, res) => {
   const request = await LabService.createLabRequest(req.body);
   sendResponse(res, 201, true, 'Lab request created successfully', { request });
+});
+
+export const getLabRequests = asyncHandler(async (req, res) => {
+  const status = req.query.status;
+  const requests = await LabService.getLabRequests(req.user._id, status);
+  sendResponse(res, 200, true, 'Lab requests retrieved successfully', { requests });
 });
 
 export const assignLabToRequest = asyncHandler(async (req, res) => {
