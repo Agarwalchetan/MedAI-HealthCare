@@ -59,6 +59,46 @@ export const validateLabLogin = (req, res, next) => {
   next();
 };
 
+export const validateLabReportUpload = (req, res, next) => {
+  const schema = Joi.object({
+    patient: Joi.string().required(),
+    testType: Joi.string().required(),
+    testName: Joi.string().required(),
+    sampleId: Joi.string().required(),
+    collectionDate: Joi.date().required(),
+    reportDate: Joi.date().optional(),
+    results: Joi.array().items(
+      Joi.object({
+        parameter: Joi.string().required(),
+        value: Joi.string().required(),
+        unit: Joi.string().optional(),
+        referenceRange: Joi.string().optional(),
+        status: Joi.string().valid('Normal', 'Abnormal', 'Critical').optional()
+      })
+    ).optional(),
+    technician: Joi.object({
+      name: Joi.string().required(),
+      id: Joi.string().required()
+    }).optional(),
+    pathologist: Joi.object({
+      name: Joi.string().required(),
+      id: Joi.string().required(),
+      signature: Joi.string().optional()
+    }).optional(),
+    notes: Joi.string().optional(),
+    priority: Joi.string().valid('Routine', 'Urgent', 'Emergency').optional()
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.details[0].message
+    });
+  }
+  next();
+};
+
 export const validateQualityControl = (req, res, next) => {
   const schema = Joi.object({
     reviewed: Joi.boolean().required(),

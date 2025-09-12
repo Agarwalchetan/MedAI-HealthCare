@@ -17,7 +17,9 @@ import {
   requestHealthVaultAccess,
   getHealthVaultRequests,
   generatePrescriptionQR,
-  sendPrescriptionToPharmacy
+  sendPrescriptionToPharmacy,
+  createLabRequest,
+  getOrderedLabReports
 } from '../controllers/doctorController.js';
 import { authenticate } from '../../../middlewares/authMiddleware.js';
 import { 

@@ -180,6 +180,5 @@ labReportSchema.index({ doctor: 1, reportDate: -1 });
 labReportSchema.index({ lab: 1, reportDate: -1 });
 labReportSchema.index({ status: 1 });
 labReportSchema.index({ testType: 1 });
-labReportSchema.index({ reportNumber: 1 });
 
 export default mongoose.model('LabReport', labReportSchema);

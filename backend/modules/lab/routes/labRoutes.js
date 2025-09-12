@@ -2,7 +2,6 @@ import express from 'express';
 import multer from 'multer';
 import {
   registerLab,
-  registerLab,
   loginLab,
   logoutLab,
   getLabProfile,
@@ -55,7 +54,6 @@ const upload = multer({
 });
 
 // Public routes
-router.post('/register', validateLabRegistration, registerLab);
 router.post('/register', validateLabRegistration, registerLab);
 router.post('/login', validateLabLogin, loginLab);
 router.get('/available', getAvailableLabs);

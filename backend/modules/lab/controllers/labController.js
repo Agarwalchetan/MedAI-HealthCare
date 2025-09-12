@@ -19,20 +19,6 @@ export const registerLab = asyncHandler(async (req, res) => {
   sendResponse(res, 201, true, 'Lab registered successfully. Approval pending.', { lab, token });
 });
 
-export const registerLab = asyncHandler(async (req, res) => {
-  const lab = await LabService.createLab(req.body);
-  const token = LabService.generateToken(lab._id);
-
-  res.cookie('token', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-  });
-
-  sendResponse(res, 201, true, 'Lab registered successfully. Approval pending.', { lab, token });
-});
-
 export const loginLab = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   
