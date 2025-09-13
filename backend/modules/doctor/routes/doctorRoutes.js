@@ -18,6 +18,7 @@ import {
   getHealthVaultRequests,
   generatePrescriptionQR,
   sendPrescriptionToPharmacy,
+  updateAvailability,
   createLabRequest,
   getOrderedLabReports
 } from '../controllers/doctorController.js';
