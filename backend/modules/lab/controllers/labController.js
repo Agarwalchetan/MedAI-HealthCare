@@ -169,14 +169,6 @@ export const assignLabToRequest = asyncHandler(async (req, res) => {
   sendResponse(res, 200, true, 'Lab assigned to request successfully', { request });
 });
 
-export const updateLabRequestStatus = asyncHandler(async (req, res) => {
-  const { requestId } = req.params;
-  const { status, notes } = req.body;
-  
-  const request = await LabService.updateLabRequestStatus(requestId, status, req.user._id, notes);
-  sendResponse(res, 200, true, 'Lab request status updated successfully', { request });
-});
-
 export const getPatientReports = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
   const labId = req.query.labId;
