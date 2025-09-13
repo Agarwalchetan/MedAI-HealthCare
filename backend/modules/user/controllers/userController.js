@@ -1,5 +1,6 @@
 import { UserService } from '../services/userService.js';
 import { asyncHandler } from '../../../middlewares/errorHandler.js';
+import User from '../models/User.js';
 
 export const registerUser = asyncHandler(async (req, res) => {
   const user = await UserService.createUser(req.body);
@@ -39,6 +40,60 @@ export const loginUser = asyncHandler(async (req, res) => {
   });
 });
 
+
+export const verifyUser = async (req, res) => {
+  try {
+    const { fullname, code } = req.body;
+
+   
+    const user = await User.findOne({ fullname });
+
+    if (!user) {
+      return res.status(402).json({
+        success: false,
+        message: "User doesn't exist",
+      });
+    }
+
+    const isCodeValid = user.verifyCode === code;
+    const isCodeNotExpired = new Date(user.verifyCodeExpiry) > new Date();
+
+    if (isCodeNotExpired && isCodeValid) {
+      user.isverified = true;
+      await user.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Account verified",
+      });
+    }
+
+    if (!isCodeNotExpired) {
+      return res.status(400).json({
+        success: false,
+        message: "Code is expired",
+      });
+    }
+
+    if (!isCodeValid) {
+      return res.status(400).json({
+        success: false,
+        message: "Incorrect code",
+      });
+    }
+  } catch (error) {
+    console.error("Error verifying code:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error in OTP verification",
+    });
+  }
+};
+    
+
+
+
+
 export const logoutUser = asyncHandler(async (req, res) => {
   res.clearCookie('token');
   res.status(200).json({
@@ -46,6 +101,9 @@ export const logoutUser = asyncHandler(async (req, res) => {
     message: 'Logout successful'
   });
 });
+
+
+
 
 export const getUserProfile = asyncHandler(async (req, res) => {
   const user = await UserService.getUserById(req.user._id);

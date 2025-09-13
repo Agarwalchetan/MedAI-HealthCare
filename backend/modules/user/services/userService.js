@@ -24,6 +24,7 @@ export class UserService {
     }
   }
 
+  
   static async authenticateUser(email, password) {
     try {
       const user = await User.findOne({ email }).select('+password');
