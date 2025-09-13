@@ -46,6 +46,12 @@ import LabLogin from './modules/lab/pages/LabLogin';
 import LabSignup from './modules/lab/pages/LabSignup';
 import LabDashboard from './modules/lab/pages/LabDashboard';
 import LabUploadReport from './modules/lab/pages/LabUploadReport';
+import LabManageRequests from './modules/lab/pages/LabManageRequests';
+import LabRequests from './modules/lab/pages/LabRequests';
+import LabQualityControl from './modules/lab/pages/LabQualityControl';
+import LabPatientReports from './modules/lab/pages/LabPatientReports';
+import LabAnalytics from './modules/lab/pages/LabAnalytics';
+import LabProfile from './modules/lab/pages/LabProfile';
 import ManageLabs from './modules/admin/pages/ManageLabs';
 
 // Admin Module
@@ -243,6 +249,36 @@ function App() {
             <Route path="/lab/upload-report" element={
               <ProtectedRoute>
                 <LabUploadReport />
+              </ProtectedRoute>
+            } />
+            <Route path="/lab/manage-requests" element={
+              <ProtectedRoute>
+                <LabManageRequests />
+              </ProtectedRoute>
+            } />
+            <Route path="/lab/lab-requests" element={
+              <ProtectedRoute>
+                <LabRequests />
+              </ProtectedRoute>
+            } />
+            <Route path="/lab/quality-control" element={
+              <ProtectedRoute>
+                <LabQualityControl />
+              </ProtectedRoute>
+            } />
+            <Route path="/lab/patient-reports" element={
+              <ProtectedRoute>
+                <LabPatientReports />
+              </ProtectedRoute>
+            } />
+            <Route path="/lab/analytics" element={
+              <ProtectedRoute>
+                <LabAnalytics />
+              </ProtectedRoute>
+            } />
+            <Route path="/lab/profile" element={
+              <ProtectedRoute>
+                <LabProfile />
               </ProtectedRoute>
             } />
 

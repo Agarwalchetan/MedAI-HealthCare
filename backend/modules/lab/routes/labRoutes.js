@@ -15,6 +15,8 @@ import {
   performQualityControl,
   getAvailableLabs,
   createLabRequest,
+  getAllLabRequests,
+  updateLabRequestStatus,
   assignLabToRequest,
   getPatientReports,
   getDoctorOrderedReports
@@ -85,7 +87,9 @@ router.get('/analytics', authenticate, authorize('lab'), getLabAnalytics);
 
 // Cross-module routes (accessible by doctors/admins)
 router.post('/requests', authenticate, createLabRequest);
+router.get('/requests/all', authenticate, getAllLabRequests);
 router.put('/requests/:requestId/assign', authenticate, assignLabToRequest);
+router.put('/requests/:requestId/status', authenticate, authorize('lab'), updateLabRequestStatus);
 router.get('/patients/:patientId/reports', authenticate, getPatientReports);
 router.get('/doctors/:doctorId/reports', authenticate, getDoctorOrderedReports);
 

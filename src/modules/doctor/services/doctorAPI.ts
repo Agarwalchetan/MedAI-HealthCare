@@ -113,5 +113,11 @@ export const doctorAPI = {
   getOrderedLabReports: async (): Promise<ApiResponse<{ reports: any[] }>> => {
     const response = await api.get('/labs/doctors/my-reports');
     return response.data;
+  },
+
+  // Get all lab requests for monitoring
+  getAllLabRequests: async (): Promise<ApiResponse<{ requests: any[] }>> => {
+    const response = await api.get('/labs/requests/all');
+    return response.data;
   }
 };

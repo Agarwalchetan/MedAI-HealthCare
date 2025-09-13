@@ -7,7 +7,8 @@ import {
   TrendingUp,
   Users,
   AlertTriangle,
-  Calendar
+  Calendar,
+  Upload
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import { Link } from 'react-router-dom';
@@ -308,25 +309,25 @@ const LabDashboard: React.FC = () => {
                 </Link>
 
                 <Link
-                  to="/lab/quality-control"
+                  to="/lab/manage-requests"
                   className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow duration-200 text-center"
                 >
                   <div className="bg-green-100 text-green-600 p-3 rounded-full inline-block mb-3">
-                    <CheckCircle className="h-6 w-6" />
+                    <Calendar className="h-6 w-6" />
                   </div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Quality Control</h3>
-                  <p className="text-sm text-gray-600">Review and approve pending reports</p>
+                  <h3 className="font-semibold text-gray-900 mb-1">Manage Requests</h3>
+                  <p className="text-sm text-gray-600">Process incoming test requests</p>
                 </Link>
 
                 <Link
-                  to="/lab/analytics"
+                  to="/lab/quality-control"
                   className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow duration-200 text-center"
                 >
                   <div className="bg-blue-100 text-blue-600 p-3 rounded-full inline-block mb-3">
-                    <TrendingUp className="h-6 w-6" />
+                    <CheckCircle className="h-6 w-6" />
                   </div>
-                  <h3 className="font-semibold text-gray-900 mb-1">View Analytics</h3>
-                  <p className="text-sm text-gray-600">Analyze performance metrics</p>
+                  <h3 className="font-semibold text-gray-900 mb-1">Quality Control</h3>
+                  <p className="text-sm text-gray-600">Review and approve reports</p>
                 </Link>
               </div>
 

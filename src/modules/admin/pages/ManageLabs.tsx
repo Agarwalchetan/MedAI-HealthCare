@@ -11,7 +11,8 @@ import {
   Star,
   MapPin,
   Phone,
-  Globe
+  Globe,
+  FileText
 } from 'lucide-react';
 import AdminNavbar from '../components/AdminNavbar';
 import AdminSidebar from '../components/AdminSidebar';
@@ -448,7 +449,7 @@ const ManageLabs: React.FC = () => {
 
                       <div className="bg-blue-50 rounded-xl p-6 text-center">
                         <div className="bg-blue-600 text-white p-3 rounded-full inline-block mb-3">
-                          <FileText className="h-6 w-6" />
+                          <FlaskConical className="h-6 w-6" />
                         </div>
                         <h3 className="font-semibold text-gray-900 mb-1">Total Reports</h3>
                         <p className="text-2xl font-bold text-blue-600">

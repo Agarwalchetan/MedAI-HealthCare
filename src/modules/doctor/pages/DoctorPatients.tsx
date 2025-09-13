@@ -8,7 +8,8 @@ import {
   Shield,
   AlertCircle,
   CheckCircle,
-  Clock
+  Clock,
+  FlaskConical
 } from 'lucide-react';
 import DoctorNavbar from '../components/DoctorNavbar';
 import DoctorSidebar from '../components/DoctorSidebar';

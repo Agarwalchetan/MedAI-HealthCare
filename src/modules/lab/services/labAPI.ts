@@ -204,6 +204,16 @@ export const labAPI = {
     return response.data;
   },
 
+  getAllLabRequests: async (status?: string): Promise<ApiResponse<{ requests: LabRequest[] }>> => {
+    const response = await api.get(`/labs/requests/all${status ? `?status=${status}` : ''}`);
+    return response.data;
+  },
+
+  updateLabRequestStatus: async (requestId: string, status: string, notes?: string): Promise<ApiResponse<{ request: LabRequest }>> => {
+    const response = await api.put(`/labs/requests/${requestId}/status`, { status, notes });
+    return response.data;
+  },
+
   assignLabToRequest: async (requestId: string, labId: string): Promise<ApiResponse<{ request: LabRequest }>> => {
     const response = await api.put(`/labs/requests/${requestId}/assign`, { labId });
     return response.data;

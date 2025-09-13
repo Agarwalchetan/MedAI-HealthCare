@@ -52,7 +52,12 @@ const LabReportsPage: React.FC = () => {
           status: report.status.toLowerCase()
         }));
         
-        setLabReports(prev => [...prev, ...convertedReports]);
+        // Merge with existing reports, avoiding duplicates
+        setLabReports(prev => {
+          const existingIds = new Set(prev.map(r => r._id));
+          const newReports = convertedReports.filter(r => !existingIds.has(r._id));
+          return [...prev, ...newReports];
+        });
       }
     } catch (error) {
       console.error('Error fetching lab reports from labs:', error);

@@ -45,17 +45,17 @@ const LabSidebar: React.FC<LabSidebarProps> = ({ isOpen, setIsOpen }) => {
       available: true
     },
     {
-      id: 'reports',
-      name: 'Manage Reports',
-      icon: <FileText className="h-5 w-5" />,
-      path: '/lab/reports',
+      id: 'manage-requests',
+      name: 'Manage Requests',
+      icon: <Calendar className="h-5 w-5" />,
+      path: '/lab/manage-requests',
       available: true
     },
     {
-      id: 'requests',
+      id: 'lab-requests',
       name: 'Lab Requests',
-      icon: <Calendar className="h-5 w-5" />,
-      path: '/lab/requests',
+      icon: <FileText className="h-5 w-5" />,
+      path: '/lab/lab-requests',
       available: true
     },
     {
@@ -66,10 +66,10 @@ const LabSidebar: React.FC<LabSidebarProps> = ({ isOpen, setIsOpen }) => {
       available: true
     },
     {
-      id: 'patients',
+      id: 'patient-reports',
       name: 'Patient Reports',
       icon: <Users className="h-5 w-5" />,
-      path: '/lab/patients',
+      path: '/lab/patient-reports',
       available: true
     },
     {
@@ -80,12 +80,12 @@ const LabSidebar: React.FC<LabSidebarProps> = ({ isOpen, setIsOpen }) => {
       available: true
     },
     {
-      id: 'profile',
+      id: 'lab-profile',
       name: 'Lab Profile',
       icon: <Settings className="h-5 w-5" />,
       path: '/lab/profile',
       available: true
-    }
+    },
   ];
 
   return (

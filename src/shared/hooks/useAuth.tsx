@@ -198,7 +198,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
     setDoctor(null);
     setLab(null);
-    userAPI.logout().catch(console.error);
+    // Try to call logout API but don't fail if it errors
+    try {
+      userAPI.logout().catch(() => {});
+    } catch (error) {
+      // Ignore logout API errors
+    }
   };
 
   const updateUser = (userData: Partial<User>) => {

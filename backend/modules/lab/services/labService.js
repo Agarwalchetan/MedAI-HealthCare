@@ -146,6 +146,14 @@ export class LabService {
         $push: { labReports: healthVaultEntry }
       });
 
+      // Notify patient about new report
+      await this.notifyPatientReportReady(labReport._id);
+      
+      // Notify doctor if report was ordered by them
+      if (reportData.doctor) {
+        await this.notifyDoctorReportReady(labReport._id);
+      }
+
       // Log report upload
       await SystemLog.createLog({
         level: 'info',
@@ -573,6 +581,63 @@ export class LabService {
         .sort({ requestDate: -1 });
 
       return requests;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getAllLabRequests(status = null) {
+    try {
+      const query = {};
+      if (status) query.status = status;
+
+      const requests = await LabRequest.find(query)
+        .populate('patient', 'fullName email phone age gender')
+        .populate('doctor', 'fullName specialization')
+        .populate('lab', 'name contactInfo')
+        .sort({ requestDate: -1 });
+
+      return requests;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async updateLabRequestStatus(requestId, status, labId, notes = '') {
+    try {
+      const request = await LabRequest.findOneAndUpdate(
+        { _id: requestId, lab: labId },
+        { 
+          status,
+          notes,
+          ...(status === 'Sample Collected' && { sampleCollectionDate: new Date() })
+        },
+        { new: true }
+      );
+
+      if (!request) {
+        throw new Error('Lab request not found or access denied');
+      }
+
+      // Log status update
+      await SystemLog.createLog({
+        level: 'info',
+        category: 'lab_management',
+        action: 'request_status_updated',
+        performedBy: {
+          userId: labId,
+          userType: 'lab'
+        },
+        targetEntity: 'lab_request',
+        targetId: requestId,
+        details: {
+          newStatus: status,
+          requestNumber: request.requestNumber,
+          notes
+        }
+      });
+
+      return request;
     } catch (error) {
       throw error;
     }
