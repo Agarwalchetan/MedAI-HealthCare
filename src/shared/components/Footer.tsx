@@ -52,7 +52,7 @@ const Footer: React.FC = () => {
             <ul className="space-y-2">
               <li><span className="text-gray-300">Patient Portal</span></li>
               <li><span className="text-gray-300">Doctor Network</span></li>
-              <li><span className="text-gray-300">Lab Integration</span></li>
+              <li><span className="text-gray-300">Lab Services</span></li>
               <li><span className="text-gray-300">Insurance Claims</span></li>
               <li><span className="text-gray-300">AI Diagnosis</span></li>
             </ul>

@@ -291,3 +291,80 @@ export interface Earnings {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface Lab {
+  _id: string;
+  name: string;
+  email: string;
+  licenseNumber: string;
+  registrationNumber: string;
+  accreditation: string;
+  contactInfo: {
+    phone: string;
+    alternatePhone?: string;
+    fax?: string;
+    website?: string;
+  };
+  address: Address;
+  services: string[];
+  isApproved: boolean;
+  isActive: boolean;
+  rating: Rating;
+  totalReports: number;
+  qualityMetrics: {
+    averageTurnaroundTime: number;
+    reportAccuracy: number;
+    patientSatisfaction: number;
+    onTimeDelivery: number;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface LabReportData {
+  _id: string;
+  reportNumber: string;
+  patient: User | string;
+  doctor?: Doctor | string;
+  lab: Lab | string;
+  testType: string;
+  testName: string;
+  testCategory: string;
+  sampleCollectionDate: Date;
+  reportDate: Date;
+  status: string;
+  priority: string;
+  files: {
+    fileName: string;
+    fileUrl: string;
+    fileType: string;
+    fileSize: number;
+  }[];
+  results: {
+    summary: string;
+    findings: string;
+    normalValues: string;
+    abnormalValues: string;
+    interpretation: string;
+    recommendations: string;
+  };
+  testParameters: {
+    parameter: string;
+    value: string;
+    unit: string;
+    normalRange: string;
+    isAbnormal: boolean;
+    flagType: string;
+  }[];
+  sharing: {
+    sharedWithPatient: boolean;
+    sharedWithDoctor: boolean;
+    accessPermissions: {
+      patient: boolean;
+      doctor: boolean;
+      admin: boolean;
+    };
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}

@@ -41,6 +41,19 @@ import LabComingSoon from './modules/lab/components/ComingSoon';
 import InsuranceComingSoon from './modules/insurance/components/ComingSoon';
 import ManagerComingSoon from './modules/manager/components/ComingSoon';
 
+// Lab Module
+import LabLogin from './modules/lab/pages/LabLogin';
+import LabSignup from './modules/lab/pages/LabSignup';
+import LabDashboard from './modules/lab/pages/LabDashboard';
+import LabUploadReport from './modules/lab/pages/LabUploadReport';
+import LabManageRequests from './modules/lab/pages/LabManageRequests';
+import LabRequests from './modules/lab/pages/LabRequests';
+import LabQualityControl from './modules/lab/pages/LabQualityControl';
+import LabPatientReports from './modules/lab/pages/LabPatientReports';
+import LabAnalytics from './modules/lab/pages/LabAnalytics';
+import LabProfile from './modules/lab/pages/LabProfile';
+import ManageLabs from './modules/admin/pages/ManageLabs';
+
 // Admin Module
 import AdminLogin from './modules/admin/pages/AdminLogin';
 import AdminDashboard from './modules/admin/pages/AdminDashboard';
@@ -55,9 +68,9 @@ import AdminComingSoon from './modules/admin/components/ComingSoon';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, doctor, loading } = useAuth();
+  const { user, doctor, lab, loading } = useAuth();
 
-  console.log('ProtectedRoute - user:', user, 'doctor:', doctor, 'loading:', loading);
+  console.log('ProtectedRoute - user:', user, 'doctor:', doctor, 'lab:', lab, 'loading:', loading);
 
   if (loading) {
     return (
@@ -67,8 +80,8 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     );
   }
 
-  // Check if either user or doctor is authenticated
-  const isAuthenticated = !!(user || doctor);
+  // Check if user, doctor, or lab is authenticated
+  const isAuthenticated = !!(user || doctor || lab);
   
   if (!isAuthenticated) {
     console.log('No authentication found, redirecting to /auth');
@@ -153,6 +166,10 @@ function App() {
             <Route path="/doctor/login" element={<DoctorLogin />} />
             <Route path="/doctor/signup" element={<DoctorSignup />} />
 
+            {/* Lab Authentication Routes */}
+            <Route path="/lab/login" element={<LabLogin />} />
+            <Route path="/lab/signup" element={<LabSignup />} />
+
             {/* Admin Authentication Routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
 
@@ -222,6 +239,49 @@ function App() {
             <Route path="/doctor/earnings" element={<DoctorEarnings />} />
             <Route path="/doctor/profile" element={<DoctorProfile />} />
 
+            {/* Protected Lab Routes */}
+            <Route path="/lab/dashboard" element={<LabDashboard />} />
+            <Route path="/lab/dashboard" element={
+              <ProtectedRoute>
+                <LabDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/lab/upload-report" element={
+              <ProtectedRoute>
+                <LabUploadReport />
+              </ProtectedRoute>
+            } />
+            <Route path="/lab/manage-requests" element={
+              <ProtectedRoute>
+                <LabManageRequests />
+              </ProtectedRoute>
+            } />
+            <Route path="/lab/lab-requests" element={
+              <ProtectedRoute>
+                <LabRequests />
+              </ProtectedRoute>
+            } />
+            <Route path="/lab/quality-control" element={
+              <ProtectedRoute>
+                <LabQualityControl />
+              </ProtectedRoute>
+            } />
+            <Route path="/lab/patient-reports" element={
+              <ProtectedRoute>
+                <LabPatientReports />
+              </ProtectedRoute>
+            } />
+            <Route path="/lab/analytics" element={
+              <ProtectedRoute>
+                <LabAnalytics />
+              </ProtectedRoute>
+            } />
+            <Route path="/lab/profile" element={
+              <ProtectedRoute>
+                <LabProfile />
+              </ProtectedRoute>
+            } />
+
             {/* Admin Routes */}
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/manage-users" element={<ManageUsers />} />
@@ -231,7 +291,7 @@ function App() {
             <Route path="/admin/analytics" element={<AdminAnalytics />} />
             <Route path="/admin/notifications" element={<AdminNotifications />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
-            <Route path="/admin/manage-labs" element={<AdminComingSoon />} />
+            <Route path="/admin/manage-labs" element={<ManageLabs />} />
             <Route path="/admin/manage-insurance" element={<AdminComingSoon />} />
 
             {/* Coming Soon Routes */}

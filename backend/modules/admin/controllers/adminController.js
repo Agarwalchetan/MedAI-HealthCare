@@ -1,6 +1,8 @@
 import { AdminService } from '../services/adminService.js';
 import { asyncHandler } from '../../../middlewares/errorHandler.js';
 import { sendResponse, sendError } from '../../../utils/responseHelper.js';
+import Lab from '../../lab/models/Lab.js';
+import SystemLog from '../models/SystemLog.js';
 
 export const loginAdmin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -276,4 +278,117 @@ export const getAppointmentAnalytics = asyncHandler(async (req, res) => {
   );
 
   sendResponse(res, 200, true, 'Appointment analytics retrieved successfully', { analytics });
+});
+
+// Lab management controllers
+export const getAllLabs = asyncHandler(async (req, res) => {
+  const filters = {
+    status: req.query.status,
+    active: req.query.active,
+    service: req.query.service,
+    search: req.query.search
+  };
+
+  const query = { isApproved: true };
+  if (filters.active === 'true') query.isActive = true;
+  if (filters.active === 'false') query.isActive = false;
+  if (filters.search) {
+    query.$or = [
+      { name: { $regex: filters.search, $options: 'i' } },
+      { email: { $regex: filters.search, $options: 'i' } },
+      { licenseNumber: { $regex: filters.search, $options: 'i' } }
+    ];
+  }
+
+  const labs = await Lab.find(query)
+    .select('-password')
+    .sort({ createdAt: -1 });
+
+  sendResponse(res, 200, true, 'Labs retrieved successfully', { labs });
+});
+
+export const getPendingLabApprovals = asyncHandler(async (req, res) => {
+  const pendingLabs = await Lab.find({ isApproved: false })
+    .select('-password')
+    .sort({ createdAt: 1 });
+
+  sendResponse(res, 200, true, 'Pending lab approvals retrieved successfully', { labs: pendingLabs });
+});
+
+export const approveLabRegistration = asyncHandler(async (req, res) => {
+  const { labId } = req.params;
+  const { approved, comments } = req.body;
+  
+  const lab = await Lab.findByIdAndUpdate(
+    labId,
+    { 
+      isApproved: approved,
+      isActive: approved,
+      approvedBy: req.user._id,
+      approvalDate: approved ? new Date() : undefined,
+      rejectionReason: approved ? undefined : comments
+    },
+    { new: true }
+  );
+
+  if (!lab) {
+    return sendError(res, 404, 'Lab not found');
+  }
+
+  // Log admin action
+  await SystemLog.createLog({
+    level: 'info',
+    category: 'lab_management',
+    action: approved ? 'lab_approved' : 'lab_rejected',
+    performedBy: {
+      userId: req.user._id,
+      userType: 'admin',
+      email: req.user.email
+    },
+    targetEntity: 'lab',
+    targetId: labId,
+    details: {
+      labName: lab.name,
+      licenseNumber: lab.licenseNumber,
+      comments
+    }
+  }, req);
+
+  sendResponse(res, 200, true, `Lab registration ${approved ? 'approved' : 'rejected'} successfully`, { lab });
+});
+
+export const updateLabStatus = asyncHandler(async (req, res) => {
+  const { labId } = req.params;
+  const { isActive } = req.body;
+  
+  const lab = await Lab.findByIdAndUpdate(
+    labId,
+    { isActive },
+    { new: true }
+  );
+
+  if (!lab) {
+    return sendError(res, 404, 'Lab not found');
+  }
+
+  // Log admin action
+  await SystemLog.createLog({
+    level: 'info',
+    category: 'lab_management',
+    action: isActive ? 'lab_activated' : 'lab_suspended',
+    performedBy: {
+      userId: req.user._id,
+      userType: 'admin',
+      email: req.user.email
+    },
+    targetEntity: 'lab',
+    targetId: labId,
+    details: {
+      previousStatus: !isActive,
+      newStatus: isActive,
+      labName: lab.name
+    }
+  }, req);
+
+  sendResponse(res, 200, true, `Lab ${isActive ? 'activated' : 'suspended'} successfully`, { lab });
 });

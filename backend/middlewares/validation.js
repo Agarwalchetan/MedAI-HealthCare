@@ -175,6 +175,57 @@ export const validateAdminLogin = (req, res, next) => {
   next();
 };
 
+export const validateLabRegistration = (req, res, next) => {
+  const schema = Joi.object({
+    name: Joi.string().min(2).max(100).required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(8).pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])')).required()
+      .messages({
+        'string.pattern.base': 'Password must contain at least one lowercase letter, one uppercase letter, one number and one special character'
+      }),
+    licenseNumber: Joi.string().required(),
+    registrationNumber: Joi.string().required(),
+    accreditation: Joi.string().valid('NABL', 'CAP', 'ISO15189', 'Other').required(),
+    contactInfo: Joi.object({
+      phone: Joi.string().pattern(/^[0-9]{10}$/).required(),
+      alternatePhone: Joi.string().pattern(/^[0-9]{10}$/).optional(),
+      website: Joi.string().uri().optional()
+    }).required(),
+    address: Joi.object({
+      street: Joi.string().required(),
+      city: Joi.string().required(),
+      state: Joi.string().required(),
+      zipCode: Joi.string().required()
+    }).required(),
+    services: Joi.array().items(Joi.string()).min(1).required()
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.details[0].message
+    });
+  }
+  next();
+};
+
+export const validateLabLogin = (req, res, next) => {
+  const schema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().required()
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.details[0].message
+    });
+  }
+  next();
+};
+
 export const validateAppointmentBooking = (req, res, next) => {
   const schema = Joi.object({
     doctor: Joi.string().required(),

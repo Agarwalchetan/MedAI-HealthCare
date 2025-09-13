@@ -8,7 +8,7 @@ const systemLogSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ['auth', 'user_management', 'doctor_management', 'system', 'security', 'api', 'database'],
+    enum: ['auth', 'user_management', 'doctor_management', 'lab_management', 'system', 'security', 'api', 'database'],
     required: true
   },
   action: {
@@ -22,7 +22,7 @@ const systemLogSchema = new mongoose.Schema({
   },
   targetEntity: {
     type: String,
-    enum: ['user', 'doctor', 'admin', 'appointment', 'prescription', 'medicine', 'system'],
+    enum: ['user', 'doctor', 'admin', 'lab', 'appointment', 'prescription', 'medicine', 'system'],
     required: true
   },
   targetId: mongoose.Schema.Types.ObjectId,

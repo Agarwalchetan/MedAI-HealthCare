@@ -66,7 +66,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen }) => {
       name: 'Manage Labs',
       icon: <FlaskConical className="h-5 w-5" />,
       path: '/admin/manage-labs',
-      available: false
+      available: true
     },
     {
       id: 'manage-insurance',

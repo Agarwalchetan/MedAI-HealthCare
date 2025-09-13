@@ -245,14 +245,14 @@ const HomePage: React.FC = () => {
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">For Labs</h3>
               <ul className="text-sm text-gray-600 space-y-2">
-                <li>• Test result management</li>
-                <li>• Direct patient delivery</li>
+                <li>• Digital report management</li>
+                <li>• Quality control systems</li>
                 <li>• Quality control</li>
-                <li>• Integration APIs</li>
+                <li>• Patient integration</li>
               </ul>
               <div className="mt-4">
-                <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-medium">
-                  🔒 Coming Soon
+                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
+                  ✅ Available Now
                 </span>
               </div>
             </div>

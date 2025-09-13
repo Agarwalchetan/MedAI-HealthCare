@@ -19,7 +19,8 @@ import {
   Lock,
   BarChart3,
   Database,
-  Zap
+  Zap,
+  FlaskConical
 } from 'lucide-react';
 
 const AuthPage: React.FC = () => {
@@ -61,6 +62,24 @@ const AuthPage: React.FC = () => {
         { icon: Brain, label: 'AI Diagnosis Support', delay: 0.2 },
         { icon: FileText, label: 'Digital Prescriptions', delay: 0.4 },
         { icon: TrendingUp, label: 'Practice Analytics', delay: 0.6 }
+      ]
+    },
+    {
+      id: 'lab',
+      title: 'Laboratories',
+      subtitle: 'Diagnostic services',
+      icon: <FlaskConical className="h-8 w-8" />,
+      description: 'Manage lab operations, upload reports, and provide diagnostic services to patients and doctors.',
+      status: 'available',
+      path: '/lab/signup',
+      color: 'from-purple-600 to-purple-700',
+      features: ['Report Management', 'Quality Control', 'Patient Integration', 'Analytics Dashboard'],
+      stats: '200+ Labs',
+      demoElements: [
+        { icon: FileText, label: 'Digital Reports', delay: 0 },
+        { icon: CheckCircle, label: 'Quality Control', delay: 0.2 },
+        { icon: Users, label: 'Patient Integration', delay: 0.4 },
+        { icon: BarChart3, label: 'Lab Analytics', delay: 0.6 }
       ]
     },
     {
