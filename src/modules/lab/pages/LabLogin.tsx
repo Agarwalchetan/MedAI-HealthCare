@@ -115,14 +115,6 @@ const LabLogin: React.FC = () => {
         {/* Login Form */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Demo Credentials */}
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-              <h4 className="font-medium text-purple-900 mb-2">Demo Credentials</h4>
-              <p className="text-sm text-purple-800">
-                Email: lab@demolab.com<br />
-                Password: lab123
-              </p>
-            </div>
 
             {/* Email Field */}
             <div>
