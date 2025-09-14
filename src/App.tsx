@@ -8,6 +8,7 @@ import HomePage from './pages/HomePage';
 import FeaturesPage from './pages/FeaturesPage';
 import AboutPage from './pages/AboutPage';
 import AuthPage from './pages/AuthPage';
+import GuardiansPage from './pages/GuardiansPage';
 
 // User Module
 import UserLogin from './modules/user/pages/UserLogin';
@@ -36,7 +37,6 @@ import DoctorEarnings from './modules/doctor/pages/DoctorEarnings';
 import DoctorProfile from './modules/doctor/pages/DoctorProfile';
 
 // Coming Soon Components
-import DoctorComingSoon from './modules/doctor/components/ComingSoon';
 import LabComingSoon from './modules/lab/components/ComingSoon';
 import InsuranceComingSoon from './modules/insurance/components/ComingSoon';
 import ManagerComingSoon from './modules/manager/components/ComingSoon';
@@ -155,6 +155,11 @@ function App() {
             <Route path="/auth" element={
               <PublicLayout>
                 <AuthPage />
+              </PublicLayout>
+            } />
+            <Route path="/guardians" element={
+              <PublicLayout>
+                <GuardiansPage />
               </PublicLayout>
             } />
 
