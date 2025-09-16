@@ -13,6 +13,7 @@ export interface User {
   prescriptions: Prescription[];
   labReports: LabReport[];
   insurance: Insurance;
+  scannedDocuments: ScannedDocument[];
   profilePicture?: string;
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
@@ -82,6 +83,36 @@ export interface Insurance {
   coverageAmount: number;
   deductible: number;
   isActive: boolean;
+}
+
+export interface ScannedDocument {
+  _id: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  category: 'medical-history' | 'prescription' | 'lab-report' | 'other';
+  extractedText: string;
+  aiAnalysis: {
+    patientName: string;
+    doctorName: string;
+    date?: Date;
+    medications: {
+      name: string;
+      dosage: string;
+      frequency: string;
+    }[];
+    testResults: {
+      testName: string;
+      value: string;
+      normalRange: string;
+    }[];
+    diagnosis: string;
+    labName: string;
+  };
+  originalFileUrl: string;
+  uploadDate: Date;
+  isProcessed: boolean;
+  confidence: number;
 }
 
 export interface AuthResponse {

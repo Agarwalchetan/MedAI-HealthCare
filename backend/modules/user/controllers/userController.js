@@ -141,3 +141,33 @@ export const updateInsurance = asyncHandler(async (req, res) => {
     data: { insurance }
   });
 });
+
+// Scanned Documents endpoints
+export const getScannedDocuments = asyncHandler(async (req, res) => {
+  const user = await UserService.getUserById(req.user._id);
+  
+  res.status(200).json({
+    success: true,
+    data: { scannedDocuments: user.scannedDocuments }
+  });
+});
+
+export const addScannedDocument = asyncHandler(async (req, res) => {
+  const scannedDocument = await UserService.addScannedDocument(req.user._id, req.body);
+  
+  res.status(201).json({
+    success: true,
+    message: 'Scanned document saved successfully',
+    data: { scannedDocument }
+  });
+});
+
+export const deleteScannedDocument = asyncHandler(async (req, res) => {
+  const { documentId } = req.params;
+  await UserService.deleteScannedDocument(req.user._id, documentId);
+  
+  res.status(200).json({
+    success: true,
+    message: 'Scanned document deleted successfully'
+  });
+});
