@@ -1,6 +1,8 @@
 import jwt from 'jsonwebtoken';
 import User from '../modules/user/models/User.js';
 import Doctor from '../modules/doctor/models/Doctor.js';
+import Admin from '../modules/admin/models/Admin.js';
+import Lab from '../modules/lab/models/Lab.js';
 
 export const authenticate = async (req, res, next) => {
   try {
@@ -14,7 +16,19 @@ export const authenticate = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id).select('-password')  || await Doctor.findById(decoded.id).select('-password') ;
+    
+    let user;
+    
+    // Check user type based on role in token or find in appropriate collection
+    if (decoded.role === 'admin') {
+      user = await Admin.findById(decoded.id).select('-password -twoFactorSecret');
+    } else if (decoded.role === 'doctor') {
+      user = await Doctor.findById(decoded.id).select('-password');
+    } else if (decoded.role === 'lab') {
+      user = await Lab.findById(decoded.id).select('-password');
+    } else {
+      user = await User.findById(decoded.id).select('-password');
+    }
     
     if (!user) {
       return res.status(401).json({ 
@@ -30,6 +44,14 @@ export const authenticate = async (req, res, next) => {
       });
     }
     req.user = user;
+    // Additional check for lab approval
+    if (decoded.role === 'lab' && !user.isApproved) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Lab account is pending approval.' 
+      });
+    }
+
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);

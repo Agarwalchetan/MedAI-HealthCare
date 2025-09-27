@@ -6,6 +6,8 @@ import User from '../../user/models/User.js';
 import Doctor from '../../doctor/models/Doctor.js';
 import Appointment from '../../doctor/models/Appointment.js';
 import Prescription from '../../doctor/models/Prescription.js';
+import Lab from '../../lab/models/Lab.js';
+import LabReport from '../../lab/models/LabReport.js';
 
 export class AdminService {
   static generateToken(adminId) {
@@ -56,6 +58,9 @@ export class AdminService {
         totalDoctors,
         verifiedDoctors,
         pendingApprovals,
+        totalLabs,
+        approvedLabs,
+        totalLabReports,
         totalAppointments,
         todayAppointments,
         totalRevenue
@@ -65,6 +70,9 @@ export class AdminService {
         Doctor.countDocuments(),
         Doctor.countDocuments({ isVerified: true, isActive: true }),
         DoctorApproval.countDocuments({ status: 'pending' }),
+        Lab.countDocuments(),
+        Lab.countDocuments({ isApproved: true, isActive: true }),
+        LabReport.countDocuments(),
         Appointment.countDocuments(),
         Appointment.countDocuments({
           appointmentDate: {
@@ -87,6 +95,18 @@ export class AdminService {
           verified: verifiedDoctors,
           pending: pendingApprovals,
           rejectionRate: await this.calculateDoctorRejectionRate()
+        },
+        labs: {
+          total: totalLabs,
+          approved: approvedLabs,
+          pending: totalLabs - approvedLabs,
+          totalReports: totalLabReports
+        },
+        labs: {
+          total: totalLabs,
+          approved: approvedLabs,
+          pending: totalLabs - approvedLabs,
+          totalReports: totalLabReports
         },
         appointments: {
           total: totalAppointments,

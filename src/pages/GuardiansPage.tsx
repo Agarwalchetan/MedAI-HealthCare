@@ -1,105 +1,61 @@
 import React, { useState } from 'react';
 import { 
-  Heart, 
-  Stethoscope, 
   Shield,
-  Settings,
-  ArrowRight,
-  Clock,
-  Activity,
+  Building2,
   Users,
+  ArrowRight,
+  Activity,
   CheckCircle,
-  Brain,
   FileText,
-  Calendar,
-  Pill,
-  UserCheck,
-  TrendingUp,
-  Bell,
-  Lock,
   BarChart3,
-  Database,
-  Zap,
+  TrendingUp,
+  CreditCard,
+  Calculator,
+  ClipboardList,
   FlaskConical
 } from 'lucide-react';
 
-const AuthPage: React.FC = () => {
+const GuardiansPage: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [hoveredRole, setHoveredRole] = useState<string | null>(null);
 
   const roles = [
     {
-      id: 'patient',
-      title: 'Patients',
-      subtitle: 'Manage your healthcare',
-      icon: <Heart className="h-8 w-8" />,
-      description: 'Access your medical records, get AI-powered health insights, and manage your healthcare journey with complete control.',
-      status: 'available',
-      path: '/user/login',
-      color: 'from-emerald-600 to-emerald-700',
-      features: ['Medical Records Access', 'AI Health Insights', 'Appointment Management', 'Prescription Tracking'],
-      stats: '50,000+ Patients',
-      demoElements: [
-        { icon: Brain, label: 'AI Health Assistant', delay: 0 },
-        { icon: FileText, label: 'Digital Health Records', delay: 0.2 },
-        { icon: Calendar, label: 'Smart Scheduling', delay: 0.4 },
-        { icon: Pill, label: 'Medication Reminders', delay: 0.6 }
-      ]
+        id: 'lab',
+        title: 'Laboratories',
+        subtitle: 'Diagnostic services',
+        icon: <FlaskConical className="h-8 w-8" />,
+        description: 'Manage lab operations, upload reports, and provide diagnostic services to patients and doctors.',
+        status: 'available',
+        path: '/lab/login',
+        color: 'from-purple-600 to-purple-700',
+        features: ['Report Management', 'Quality Control', 'Patient Integration', 'Analytics Dashboard'],
+        stats: '200+ Labs',
+        demoElements: [
+          { icon: FileText, label: 'Digital Reports', delay: 0 },
+          { icon: CheckCircle, label: 'Quality Control', delay: 0.2 },
+          { icon: Users, label: 'Patient Integration', delay: 0.4 },
+          { icon: BarChart3, label: 'Lab Analytics', delay: 0.6 }
+        ]
     },
     {
-      id: 'doctor',
-      title: 'Doctors',
-      subtitle: 'Professional medical practice',
-      icon: <Stethoscope className="h-8 w-8" />,
-      description: 'Manage patients efficiently, access diagnostic tools, and provide exceptional care through our platform.',
-      status: 'available',
-      path: '/doctor/login',
-      color: 'from-blue-600 to-blue-700',
-      features: ['Patient Management', 'AI Diagnostic Tools', 'Digital Prescriptions', 'Practice Analytics'],
-      stats: '1,000+ Doctors',
-      demoElements: [
-        { icon: Users, label: 'Patient Dashboard', delay: 0 },
-        { icon: Brain, label: 'AI Diagnosis Support', delay: 0.2 },
-        { icon: FileText, label: 'Digital Prescriptions', delay: 0.4 },
-        { icon: TrendingUp, label: 'Practice Analytics', delay: 0.6 }
-      ]
-    },
-    {
-      id: 'guardian',
-      title: 'Guardians',
-      subtitle: 'Family healthcare management',
+      id: 'insurance',
+      title: 'Insurance',
+      subtitle: 'Insurance management portal',
       icon: <Shield className="h-8 w-8" />,
-      description: 'Manage healthcare for family members and dependents with secure access and coordination tools.',
+      description: 'Manage insurance claims, policies, and provide comprehensive coverage solutions for healthcare services.',
       status: 'available',
-      path: '/guardians',
-      color: 'from-purple-600 to-purple-700',
-      features: ['Family Management', 'Emergency Access', 'Care Coordination', 'Medical Proxy'],
-      stats: 'Guardian Services',
+      path: '/insurance/login',
+      color: 'from-orange-600 to-orange-700',
+      features: ['Claims Management', 'Policy Administration', 'Coverage Analytics', 'Provider Network'],
+      stats: '500+ Insurance Partners',
       demoElements: [
-        { icon: Users, label: 'Labs Overview', delay: 0 },
-        { icon: Bell, label: 'Insurance Alerts', delay: 0.2 },
-        { icon: UserCheck, label: 'Care Coordination', delay: 0.4 },
-        { icon: Lock, label: 'Secure Access', delay: 0.6 }
+        { icon: CreditCard, label: 'Claims Processing', delay: 0 },
+        { icon: FileText, label: 'Policy Management', delay: 0.2 },
+        { icon: Calculator, label: 'Premium Calculator', delay: 0.4 },
+        { icon: BarChart3, label: 'Coverage Analytics', delay: 0.6 }
       ]
     },
-    {
-      id: 'administrator',
-      title: 'Administrators',
-      subtitle: 'System administration',
-      icon: <Settings className="h-8 w-8" />,
-      description: 'Comprehensive system administration with analytics, user management, and oversight tools.',
-      status: 'available',
-      path: '/admin/login',
-      color: 'from-slate-600 to-slate-700',
-      features: ['User Management', 'System Analytics', 'Security Controls', 'Compliance Tools'],
-      stats: 'Enterprise Ready',
-      demoElements: [
-        { icon: BarChart3, label: 'System Analytics', delay: 0 },
-        { icon: Database, label: 'Data Management', delay: 0.2 },
-        { icon: Lock, label: 'Security Center', delay: 0.4 },
-        { icon: Zap, label: 'Performance Monitor', delay: 0.6 }
-      ]
-    }
   ];
 
   const handleRoleSelect = (role: any) => {
@@ -118,15 +74,15 @@ const AuthPage: React.FC = () => {
         {/* Introduction */}
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-6">
-            Choose Your Portal
+            Guardian Services
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Each portal is specifically designed with AI-powered features tailored to your role in healthcare.
+            Choose your guardian service portal to manage healthcare operations and provide comprehensive care coordination.
           </p>
         </div>
 
         {/* Role Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10 max-w-5xl mx-auto">
           {roles.map((role) => (
             <div
               key={role.id}
@@ -151,19 +107,12 @@ const AuthPage: React.FC = () => {
 
               {/* Status Badge */}
               <div className="absolute top-6 right-6 z-10">
-                {role.status === 'available' ? (
-                  <div className={`flex items-center space-x-1 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 ${
-                    hoveredRole === role.id ? 'scale-110 bg-green-200' : ''
-                  }`}>
-                    <CheckCircle className="h-3 w-3" />
-                    <span>Available</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center space-x-1 bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">
-                    <Clock className="h-3 w-3" />
-                    <span>Coming Soon</span>
-                  </div>
-                )}
+                <div className={`flex items-center space-x-1 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 ${
+                  hoveredRole === role.id ? 'scale-110 bg-green-200' : ''
+                }`}>
+                  <CheckCircle className="h-3 w-3" />
+                  <span>Available</span>
+                </div>
               </div>
 
               {/* Icon with Animation */}
@@ -251,25 +200,16 @@ const AuthPage: React.FC = () => {
 
                 {/* Action Button with Animation */}
                 <div className="pt-2">
-                  {role.status === 'available' ? (
-                    <button
-                      className={`w-full bg-gradient-to-r ${role.color} text-white py-3 px-6 rounded-lg font-medium flex items-center justify-center space-x-2 transition-all duration-300 ${
-                        hoveredRole === role.id ? 'shadow-lg scale-105 shadow-blue-200' : 'hover:shadow-md'
-                      }`}
-                    >
-                      <span>Access {role.title} Portal</span>
-                      <ArrowRight className={`h-4 w-4 transition-transform duration-300 ${
-                        hoveredRole === role.id ? 'translate-x-1' : ''
-                      }`} />
-                    </button>
-                  ) : (
-                    <button
-                      disabled
-                      className="w-full bg-gray-300 text-gray-500 py-3 px-6 rounded-lg font-medium cursor-not-allowed"
-                    >
-                      Coming Soon
-                    </button>
-                  )}
+                  <button
+                    className={`w-full bg-gradient-to-r ${role.color} text-white py-3 px-6 rounded-lg font-medium flex items-center justify-center space-x-2 transition-all duration-300 ${
+                      hoveredRole === role.id ? 'shadow-lg scale-105 shadow-blue-200' : 'hover:shadow-md'
+                    }`}
+                  >
+                    <span>Access {role.title} Portal</span>
+                    <ArrowRight className={`h-4 w-4 transition-transform duration-300 ${
+                      hoveredRole === role.id ? 'translate-x-1' : ''
+                    }`} />
+                  </button>
                 </div>
               </div>
 
@@ -286,27 +226,38 @@ const AuthPage: React.FC = () => {
           <div className="bg-blue-50 rounded-xl p-8 border border-blue-100">
             <div className="flex items-center justify-center space-x-2 mb-4">
               <Activity className="h-5 w-5 text-blue-600" />
-              <span className="font-semibold text-blue-900">Platform Statistics</span>
+              <span className="font-semibold text-blue-900">Guardian Services Statistics</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
               <div>
-                <div className="text-2xl font-bold text-blue-900">99.9%</div>
-                <div className="text-blue-600 text-sm">Uptime</div>
+                <div className="text-2xl font-bold text-blue-900">700+</div>
+                <div className="text-blue-600 text-sm">Partner Organizations</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-blue-900">51K+</div>
-                <div className="text-blue-600 text-sm">Active Users</div>
+                <div className="text-2xl font-bold text-blue-900">98.5%</div>
+                <div className="text-blue-600 text-sm">Service Reliability</div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-blue-900">24/7</div>
-                <div className="text-blue-600 text-sm">AI Support</div>
+                <div className="text-blue-600 text-sm">Guardian Support</div>
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Back Button */}
+        <div className="mt-8 text-center">
+          <button
+            onClick={() => window.history.back()}
+            className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200"
+          >
+            <ArrowRight className="h-4 w-4 rotate-180" />
+            <span>Back to Portal Selection</span>
+          </button>
         </div>
       </div>
     </div>
   );
 };
 
-export default AuthPage;
+export default GuardiansPage;

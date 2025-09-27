@@ -18,7 +18,9 @@ import {
   getHealthVaultRequests,
   generatePrescriptionQR,
   sendPrescriptionToPharmacy,
-  updateAvailability
+  updateAvailability,
+  createLabRequest,
+  getOrderedLabReports
 } from '../controllers/doctorController.js';
 import { authenticate } from '../../../middlewares/authMiddleware.js';
 import { 
@@ -68,5 +70,9 @@ router.get('/health-vault-requests', getHealthVaultRequests);
 // Prescription features
 router.post('/prescriptions/:prescriptionId/qr', generatePrescriptionQR);
 router.post('/prescriptions/:prescriptionId/send-pharmacy', sendPrescriptionToPharmacy);
+
+// Lab integration
+router.post('/lab-requests', createLabRequest);
+router.get('/lab-reports', getOrderedLabReports);
 
 export default router;

@@ -108,5 +108,26 @@ export const adminAPI = {
   updateSystemSettings: async (settings: any): Promise<ApiResponse> => {
     const response = await api.put('/admin/settings', settings);
     return response.data;
+  },
+
+  // Lab management
+  getLabs: async (): Promise<ApiResponse<{ labs: any[] }>> => {
+    const response = await api.get('/admin/labs');
+    return response.data;
+  },
+
+  getPendingLabs: async (): Promise<ApiResponse<{ labs: any[] }>> => {
+    const response = await api.get('/admin/labs/pending');
+    return response.data;
+  },
+
+  approveLabRegistration: async (labId: string, approved: boolean, comments?: string): Promise<ApiResponse> => {
+    const response = await api.put(`/admin/labs/${labId}/approve`, { approved, comments });
+    return response.data;
+  },
+
+  updateLabStatus: async (labId: string, isActive: boolean): Promise<ApiResponse> => {
+    const response = await api.put(`/admin/labs/${labId}/status`, { isActive });
+    return response.data;
   }
 };

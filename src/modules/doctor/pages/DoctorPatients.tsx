@@ -8,11 +8,13 @@ import {
   Shield,
   AlertCircle,
   CheckCircle,
-  Clock
+  Clock,
+  FlaskConical
 } from 'lucide-react';
 import DoctorNavbar from '../components/DoctorNavbar';
 import DoctorSidebar from '../components/DoctorSidebar';
 import { doctorAPI } from '../services/doctorAPI';
+import { labAPI } from '../../lab/services/labAPI';
 import { User, MedicalHistory } from '../../../shared/types';
 import toast from 'react-hot-toast';
 
@@ -104,12 +106,30 @@ const DoctorPatients: React.FC = () => {
 
   const viewHealthVault = async (patient: User) => {
     try {
-      const response = await doctorAPI.getPatientHealthVault(patient._id);
+      const [healthVaultResponse, labReportsResponse] = await Promise.all([
+        doctorAPI.getPatientHealthVault(patient._id),
+        labAPI.getPatientReports(patient._id)
+      ]);
+      
       setSelectedPatient({
         ...patient,
-        medicalHistory: response.data?.medicalHistory || [],
-        prescriptions: response.data?.prescriptions || [],
-        labReports: response.data?.labReports || []
+        medicalHistory: healthVaultResponse.data?.medicalHistory || [],
+        prescriptions: healthVaultResponse.data?.prescriptions || [],
+        labReports: [
+          ...(healthVaultResponse.data?.labReports || []),
+          ...(labReportsResponse.data?.reports || []).map(report => ({
+            _id: report._id,
+            testName: report.testName,
+            testType: report.testType,
+            reportDate: report.reportDate,
+            results: report.results?.summary || '',
+            normalRange: report.results?.normalValues || '',
+            labName: report.lab?.name || 'Lab',
+            doctorReferred: report.doctor?.fullName || '',
+            fileUrl: report.files?.[0]?.fileUrl || '',
+            status: report.status.toLowerCase()
+          }))
+        ]
       });
       setShowHealthVault(true);
     } catch (error: any) {

@@ -10,6 +10,10 @@ import {
   getPendingDoctorApprovals,
   approveDoctorRegistration,
   updateDoctorStatus,
+  getAllLabs,
+  getPendingLabApprovals,
+  approveLabRegistration,
+  updateLabStatus,
   getSystemLogs,
   getSystemNotifications,
   getAnalytics,
@@ -49,6 +53,12 @@ router.get('/doctors', getAllDoctors);
 router.get('/doctors/pending', getPendingDoctorApprovals);
 router.put('/doctors/:doctorId/approve', approveDoctorRegistration);
 router.put('/doctors/:doctorId/status', updateDoctorStatus);
+
+// Lab management
+router.get('/labs', getAllLabs);
+router.get('/labs/pending', getPendingLabApprovals);
+router.put('/labs/:labId/approve', approveLabRegistration);
+router.put('/labs/:labId/status', updateLabStatus);
 
 // Appointment management
 router.get('/appointments', getAllAppointments);
