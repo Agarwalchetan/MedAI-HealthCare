@@ -112,6 +112,13 @@ const userSchema = new mongoose.Schema({
     unique: true,
     sparse: true
   },
+aadhar:{
+    public_id:{type:String}
+},
+secure_url:{
+    type:String
+},
+
   address: addressSchema,
   emergencyContact: emergencyContactSchema,
   medicalHistory: [medicalHistorySchema],
