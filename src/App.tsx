@@ -23,7 +23,7 @@ import Paramedics from './modules/user/pages/Paramedics';
 import Medicines from './modules/user/pages/Medicines';
 import Appointments from './modules/user/pages/Appointments';
 import HealthVault from './modules/user/pages/HealthVault';
-
+import VerifyUserEmail from './modules/user/pages/VerifyUserEmail';
 // Doctor Module
 import DoctorLogin from './modules/doctor/pages/DoctorLogin';
 import DoctorSignup from './modules/doctor/pages/DoctorSignup';
@@ -161,6 +161,7 @@ function App() {
             {/* User Authentication Routes */}
             <Route path="/user/login" element={<UserLogin />} />
             <Route path="/user/signup" element={<UserSignup />} />
+            <Route path="/user/verifyEmail" element={<VerifyUserEmail />} />
             
             {/* Doctor Authentication Routes */}
             <Route path="/doctor/login" element={<DoctorLogin />} />

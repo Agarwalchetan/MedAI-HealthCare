@@ -118,7 +118,14 @@ aadhar:{
 secure_url:{
     type:String
 },
-
+ emailVerificationCode: {
+    type: String,
+    default: null,
+  },
+  emailVerificationExpires: {
+    type: Date,
+    default: null,
+  },
   address: addressSchema,
   emergencyContact: emergencyContactSchema,
   medicalHistory: [medicalHistorySchema],

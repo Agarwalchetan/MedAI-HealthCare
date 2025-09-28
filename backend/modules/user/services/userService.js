@@ -14,8 +14,13 @@ export class UserService {
       if (existingUser) {
         throw new Error('User already exists with this email');
       }
+ const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const verificationExpires = new Date(Date.now() + 10 * 60 * 1000); // Expires in 10 minutes
 
-      const user = new User(userData);
+      const user = new User(userData,{
+        emailVerificationCode: verificationCode,
+      emailVerificationExpires: verificationExpires,
+      });
       await user.save();
       
       return user;
@@ -24,7 +29,24 @@ export class UserService {
     }
   }
 
-  
+  static async sendVerificationEmail(email ,verificationCode){
+    try {
+          await resend.emails.send({
+      from: 'onboarding@yourdomain.com',
+      to: email,
+      subject: 'Verify Your Email Address',
+      html: `
+        <h1>Welcome to MedAI!</h1>
+        <p>Thank you for registering. Please use the following code to verify your email address:</p>
+        <h2>${verificationCode}</h2>
+        <p>This code will expire in 10 minutes.</p>
+      `,
+    }); 
+    
+    } catch (error) {
+      throw error
+    }
+  } 
   static async authenticateUser(email, password) {
     try {
       const user = await User.findOne({ email }).select('+password');

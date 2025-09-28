@@ -98,7 +98,7 @@ const UserSignup: React.FC = () => {
 
       await registerUser(userData);
       toast.success('Account created successfully!');
-      navigate('/user/dashboard');
+      navigate('/user/verifyEmail');
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Registration failed');
     } finally {

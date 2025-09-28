@@ -12,7 +12,9 @@ import {
   getLabReports,
   addLabReport,
   getInsuranceDetails,
-  updateInsurance
+  updateInsurance,
+  verifyUserEmail,
+  resendCode
 } from '../controllers/userController.js';
 import { authenticate } from '../../../middlewares/authMiddleware.js';
 import { 
@@ -28,6 +30,8 @@ router.post('/register', validateUserRegistration, upload.single("aadhar"),  reg
 router.post('/login', validateUserLogin, loginUser);
 router.post('/verify', validateUserLogin, verifyUser);
 router.post('/logout', logoutUser);
+router.post('/verifyEmail', verifyUserEmail);
+router.post('/resendCode', resendCode);
 
 // Protected routes (require authentication)
 router.use(authenticate); // All routes below require authentication
