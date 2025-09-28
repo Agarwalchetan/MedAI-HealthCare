@@ -1,5 +1,10 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+const { Resend } = require('resend');
+const resend = new Resend(process.env.YOUR_RESEND_API_KEY);
+
+
+
 
 export class UserService {
   static generateToken(userId) {
@@ -42,7 +47,7 @@ export class UserService {
         <p>This code will expire in 10 minutes.</p>
       `,
     }); 
-    
+
     } catch (error) {
       throw error
     }

@@ -28,7 +28,7 @@ const router = express.Router();
 // Authentication routes
 router.post('/register', validateUserRegistration, upload.single("aadhar"),  registerUser);
 router.post('/login', validateUserLogin, loginUser);
-router.post('/verify', validateUserLogin, verifyUser);
+
 router.post('/logout', logoutUser);
 router.post('/verifyEmail', verifyUserEmail);
 router.post('/resendCode', resendCode);
