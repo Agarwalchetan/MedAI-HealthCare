@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader, Heart, Mic, MicOff, Play, Pause } from 'lucide-react';
+import { Send, Bot, User, Loader, Heart, Mic, Play, Pause } from 'lucide-react';
 import UserNavbar from '../components/UserNavbar';
 import UserSidebar from '../components/UserSidebar';
 import { transcribeAudio, textToSpeech, stopMediaStream } from './AIChatbot/deepgram';
@@ -16,6 +16,44 @@ interface Message {
 }
 
 const AIChatbot: React.FC = () => {
+  // custom CSS for recording animation
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes waveform {
+        0%, 100% { 
+          height: 4px; 
+          opacity: 0.4;
+        }
+        50% { 
+          height: 20px; 
+          opacity: 1;
+        }
+      }
+      .waveform-bar {
+        animation: waveform 1.5s ease-in-out infinite;
+        background: #374151;
+        border-radius: 2px;
+      }
+      @keyframes pulse-ring {
+        0% {
+          transform: scale(0.95);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1.4);
+          opacity: 0;
+        }
+      }
+      .recording-pulse {
+        animation: pulse-ring 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [messages, setMessages] = useState<Message[]>([
@@ -35,15 +73,45 @@ const AIChatbot: React.FC = () => {
   const [currentStream, setCurrentStream] = useState<MediaStream | null>(null);
   const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const formatRecordingTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // recording timer effect
+  useEffect(() => {
+    if (isRecording) {
+      setRecordingTime(0);
+      recordingIntervalRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+    } else {
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+        recordingIntervalRef.current = null;
+      }
+      setRecordingTime(0);
+    }
+
+    return () => {
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+      }
+    };
+  }, [isRecording]);
 
   // Translate initial message when language changes
   useEffect(() => {
@@ -320,7 +388,7 @@ const AIChatbot: React.FC = () => {
               </div>
 
               {/* Chat Container */}
-              <div className="flex-1 bg-white rounded-xl shadow-sm flex flex-col">
+              <div className={`flex-1 bg-white rounded-xl shadow-sm flex flex-col transition-all duration-500`}>
                 {/* Chat Messages */}
                 <div className="flex-1 p-6 overflow-y-auto">
                   <div className="space-y-4">
@@ -424,28 +492,61 @@ const AIChatbot: React.FC = () => {
 
                 {/* Input Area */}
                 <div className="p-6 border-t border-gray-200">
+
                   <div className="flex space-x-4">
-                    <input
-                      type="text"
-                      value={inputMessage}
-                      onChange={(e) => setInputMessage(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                      placeholder="Describe your symptoms or health concerns..."
-                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
+                    <div className="flex-1 relative">
+                      <input
+                        type="text"
+                        value={inputMessage}
+                        onChange={(e) => setInputMessage(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                        placeholder={isRecording ? "Recording audio..." : "Describe your symptoms or health concerns..."}
+                        disabled={isRecording}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-500"
+                      />
+                      {/* Waveform Animation in Input Area */}
+                      {isRecording && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="flex items-center space-x-1">
+                            <div className="w-1 waveform-bar" style={{animationDelay: '0ms'}}></div>
+                            <div className="w-1 waveform-bar" style={{animationDelay: '0.1s'}}></div>
+                            <div className="w-1 waveform-bar" style={{animationDelay: '0.2s'}}></div>
+                            <div className="w-1 waveform-bar" style={{animationDelay: '0.3s'}}></div>
+                            <div className="w-1 waveform-bar" style={{animationDelay: '0.4s'}}></div>
+                            <div className="w-1 waveform-bar" style={{animationDelay: '0.5s'}}></div>
+                            <div className="w-1 waveform-bar" style={{animationDelay: '0.6s'}}></div>
+                            <div className="w-1 waveform-bar" style={{animationDelay: '0.7s'}}></div>
+                            <div className="w-1 waveform-bar" style={{animationDelay: '0.8s'}}></div>
+                            <div className="w-1 waveform-bar" style={{animationDelay: '0.9s'}}></div>
+                          </div>
+                          <span className="ml-4 text-gray-500 text-sm font-medium">
+                            {formatRecordingTime(recordingTime)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                     <button
                       onClick={handleVoiceToggle}
                       disabled={isLoading || isTranslating}
-                      className={`p-3 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${isRecording
-                        ? 'bg-red-600 hover:bg-red-700 text-white'
-                        : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                      className={`relative p-3 rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${isRecording
+                        ? 'bg-gray-900 text-white shadow-lg'
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                         }`}
+                      title={isRecording ? 'Stop recording' : 'Start voice recording'}
                     >
-                      {isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                      {isRecording ? (
+                        <div className="relative">
+                          <div className="w-4 h-4 bg-white rounded-sm"></div>
+                          
+                          <div className="absolute -inset-1 rounded-full border border-gray-700 opacity-30 recording-pulse"></div>
+                        </div>
+                      ) : (
+                        <Mic className="h-5 w-5" />
+                      )}
                     </button>
                     <button
                       onClick={() => handleSendMessage()}
-                      disabled={!inputMessage.trim() || isLoading || isTranslating}
+                      disabled={!inputMessage.trim() || isLoading || isTranslating || isRecording}
                       className="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Send className="h-5 w-5" />
