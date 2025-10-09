@@ -4,26 +4,41 @@ import UserNavbar from '../components/UserNavbar';
 import UserSidebar from '../components/UserSidebar';
 import { userAPI } from '../services/userAPI';
 import { labAPI } from '../../lab/services/labAPI';
-import { LabReport } from '../../../shared/types';
+import { LabReport, ScannedDocument } from '../../../shared/types';
 import toast from 'react-hot-toast';
+import { DocumentViewModal } from './HealthVault/DocumentViewModal';
+import { FileUploadModal } from './HealthVault/Components';
+import { LalPathLabModal } from './Lab report/lalPathLab';
 
 const LabReportsPage: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [labReports, setLabReports] = useState<LabReport[]>([]);
+  const [scannedDocuments, setScannedDocuments] = useState<ScannedDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [showUploadForm, setShowUploadForm] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<any>(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showLalPathModal, setShowLalPathModal] = useState(false);
 
   useEffect(() => {
-    fetchLabReports();
-    fetchLabReportsFromLabs();
+    fetchLabReportsData();
   }, []);
 
-  const fetchLabReports = async () => {
+  const fetchLabReportsData = async () => {
     try {
-      const response = await userAPI.getLabReports();
-      setLabReports(response.data?.labReports || []);
+      const [labReportsResponse, scannedDocsResponse] = await Promise.all([
+        userAPI.getLabReports(),
+        userAPI.getScannedDocuments()
+      ]);
+
+      setLabReports(labReportsResponse.data?.labReports || []);
+      setScannedDocuments(scannedDocsResponse.data?.scannedDocuments || []);
+      
+      // Also fetch from labs
+      await fetchLabReportsFromLabs();
     } catch (error) {
-      console.error('Error fetching lab reports:', error);
+      console.error('Error fetching lab reports data:', error);
       toast.error('Failed to load lab reports');
     } finally {
       setLoading(false);
@@ -49,7 +64,7 @@ const LabReportsPage: React.FC = () => {
           labName: report.lab?.name || 'Lab',
           doctorReferred: report.doctor?.fullName || '',
           fileUrl: report.files?.[0]?.fileUrl || '',
-          status: report.status.toLowerCase()
+          status: report.status.toLowerCase() as 'pending' | 'completed' | 'reviewed'
         }));
         
         // Merge with existing reports, avoiding duplicates
@@ -64,47 +79,9 @@ const LabReportsPage: React.FC = () => {
     }
   };
 
-  // Sample lab reports for demonstration
-  const sampleLabReports: LabReport[] = [
-    {
-      _id: '1',
-      testName: 'Complete Blood Count (CBC)',
-      testType: 'Blood Test',
-      reportDate: new Date('2024-01-15'),
-      results: 'All parameters within normal limits. Hemoglobin: 14.2 g/dL, WBC: 7,200/μL, Platelets: 280,000/μL',
-      normalRange: 'Hemoglobin: 12.0-16.0 g/dL, WBC: 4,000-11,000/μL',
-      labName: 'City Diagnostic Center',
-      doctorReferred: 'Dr. Sarah Johnson',
-      fileUrl: '',
-      status: 'completed'
-    },
-    {
-      _id: '2',
-      testName: 'Lipid Profile',
-      testType: 'Blood Test',
-      reportDate: new Date('2024-01-10'),
-      results: 'Total Cholesterol: 195 mg/dL, LDL: 120 mg/dL, HDL: 45 mg/dL, Triglycerides: 150 mg/dL',
-      normalRange: 'Total Cholesterol: <200 mg/dL, LDL: <100 mg/dL, HDL: >40 mg/dL',
-      labName: 'HealthCare Labs',
-      doctorReferred: 'Dr. Michael Chen',
-      fileUrl: '',
-      status: 'reviewed'
-    },
-    {
-      _id: '3',
-      testName: 'HbA1c',
-      testType: 'Blood Test',
-      reportDate: new Date('2024-01-05'),
-      results: '6.8% - Indicates good diabetes control',
-      normalRange: 'Non-diabetic: <5.7%, Good control: <7.0%',
-      labName: 'Advanced Diagnostics',
-      doctorReferred: 'Dr. Emily Rodriguez',
-      fileUrl: '',
-      status: 'completed'
-    }
-  ];
-
-  const displayReports = labReports.length > 0 ? labReports : sampleLabReports;
+  // Combine regular lab reports with scanned lab report documents
+  const scannedLabReports = scannedDocuments.filter(doc => doc.category === 'lab-report');
+  const allLabReports = [...labReports, ...scannedLabReports];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -124,6 +101,24 @@ const LabReportsPage: React.FC = () => {
     }
   };
 
+  const handleViewDocument = (document: any) => {
+    setSelectedDocument(document);
+    setShowViewModal(true);
+  };
+
+  const handleSaveExtractedData = (extractedText: string) => {
+    // Refresh data after successful upload
+    fetchLabReportsData();
+    toast.success('Lab report uploaded and processed successfully!');
+  };
+
+  const handleLalPathReportFetched = (reportData: any) => {
+    // The report is already added to the database by the backend
+    // Just refresh the data to show the new report
+    fetchLabReportsData();
+    toast.success('LalPath Labs report added to your lab reports!');
+  };
+
   return (
     <div className="h-screen bg-gray-50 flex">
       <UserSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
@@ -139,13 +134,22 @@ const LabReportsPage: React.FC = () => {
                 <h1 className="text-3xl font-bold text-gray-900">Lab Reports</h1>
                 <p className="text-gray-600 mt-1">View and manage your laboratory test results</p>
               </div>
-              <button
-                onClick={() => setShowUploadForm(!showUploadForm)}
-                className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200"
-              >
-                <Upload className="h-5 w-5" />
-                <span>Upload Report</span>
-              </button>
+               <div className="flex items-center space-x-3">
+                 <button
+                   onClick={() => setShowLalPathModal(true)}
+                   className="flex items-center space-x-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors duration-200"
+                 >
+                   <Download className="h-5 w-5" />
+                   <span>Fetch LalPath Report</span>
+                 </button>
+                 <button
+                   onClick={() => setShowUploadModal(true)}
+                   className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                 >
+                   <Upload className="h-5 w-5" />
+                   <span>Upload Report</span>
+                 </button>
+               </div>
             </div>
 
             {/* Upload Form */}
@@ -228,13 +232,13 @@ const LabReportsPage: React.FC = () => {
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
                   <p className="text-gray-500">Loading lab reports...</p>
                 </div>
-              ) : displayReports.length === 0 ? (
+              ) : allLabReports.length === 0 ? (
                 <div className="bg-white rounded-xl shadow-sm p-12 text-center">
                   <FlaskConical className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No Lab Reports</h3>
                   <p className="text-gray-500 mb-6">Upload your first lab report to get started.</p>
                   <button
-                    onClick={() => setShowUploadForm(true)}
+                    onClick={() => setShowUploadModal(true)}
                     className="inline-flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200"
                   >
                     <Upload className="h-5 w-5" />
@@ -242,7 +246,11 @@ const LabReportsPage: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                displayReports.map((report) => (
+                allLabReports.map((report) => {
+                  // Check if it's a scanned document or regular lab report
+                  const isScannedDoc = 'category' in report;
+                  
+                  return (
                   <div key={report._id} className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow duration-200">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -251,66 +259,121 @@ const LabReportsPage: React.FC = () => {
                             <FlaskConical className="h-5 w-5" />
                           </div>
                           <div>
-                            <h3 className="text-xl font-semibold text-gray-900">{report.testName}</h3>
-                            <p className="text-gray-600">{report.testType}</p>
-                          </div>
-                          <span className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(report.status)}`}>
-                            {getStatusIcon(report.status)}
-                            <span className="capitalize">{report.status}</span>
-                          </span>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                          <div className="flex items-center space-x-2 text-gray-600">
-                            <Calendar className="h-4 w-4" />
-                            <span className="text-sm">Report Date: {new Date(report.reportDate).toLocaleDateString()}</span>
-                          </div>
-                          <div className="flex items-center space-x-2 text-gray-600">
-                            <FileText className="h-4 w-4" />
-                            <span className="text-sm">Lab: {report.labName}</span>
-                          </div>
-                        </div>
-
-                        {report.doctorReferred && (
-                          <div className="flex items-center space-x-2 text-gray-600 mb-4">
-                            <span className="text-sm">Referred by: {report.doctorReferred}</span>
-                          </div>
-                        )}
-
-                        {report.results && (
-                          <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                            <h4 className="font-medium text-gray-900 mb-2">Results</h4>
-                            <p className="text-sm text-gray-700 mb-2">{report.results}</p>
-                            {report.normalRange && (
-                              <p className="text-xs text-gray-500">Normal Range: {report.normalRange}</p>
+                            {isScannedDoc ? (
+                              // Scanned document display
+                              <>
+                                <h3 className="text-xl font-semibold text-gray-900">{report.fileName}</h3>
+                                <p className="text-gray-600">
+                                  {(report.fileSize / 1024 / 1024).toFixed(2)} MB • {report.fileType}
+                                </p>
+                              </>
+                            ) : (
+                              // Regular lab report display
+                              <>
+                                <h3 className="text-xl font-semibold text-gray-900">{report.testName}</h3>
+                                <p className="text-gray-600">{report.testType}</p>
+                              </>
                             )}
                           </div>
+                          <div className="flex items-center space-x-2">
+                            {isScannedDoc && (
+                              <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                Scanned
+                              </span>
+                            )}
+                            <span className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(isScannedDoc ? 'completed' : report.status)}`}>
+                              {getStatusIcon(isScannedDoc ? 'completed' : report.status)}
+                              <span className="capitalize">{isScannedDoc ? 'completed' : report.status}</span>
+                            </span>
+                          </div>
+                        </div>
+
+                        {isScannedDoc ? (
+                          // Scanned document details
+                          <>
+                            {report.aiAnalysis && (
+                              <div className="space-y-2 text-sm text-gray-500 mb-4">
+                                {report.aiAnalysis.labName && (
+                                  <div><span className="font-medium">Lab:</span> {report.aiAnalysis.labName}</div>
+                                )}
+                                {report.aiAnalysis.patientName && (
+                                  <div><span className="font-medium">Patient:</span> {report.aiAnalysis.patientName}</div>
+                                )}
+                                {report.aiAnalysis.testResults && report.aiAnalysis.testResults.length > 0 && (
+                                  <div><span className="font-medium">Test Results:</span> {report.aiAnalysis.testResults.length} found</div>
+                                )}
+                              </div>
+                            )}
+                            <div className="flex items-center space-x-4 text-sm text-gray-500">
+                              <span>{new Date(report.uploadDate).toLocaleDateString()}</span>
+                              <span>Confidence: {Math.round((report.confidence || 0) * 100)}%</span>
+                            </div>
+                          </>
+                        ) : (
+                          // Regular lab report details
+                          <>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                              <div className="flex items-center space-x-2 text-gray-600">
+                                <Calendar className="h-4 w-4" />
+                                <span className="text-sm">Report Date: {new Date(report.reportDate).toLocaleDateString()}</span>
+                              </div>
+                              <div className="flex items-center space-x-2 text-gray-600">
+                                <FileText className="h-4 w-4" />
+                                <span className="text-sm">Lab: {report.labName}</span>
+                              </div>
+                            </div>
+
+                            {report.doctorReferred && (
+                              <div className="flex items-center space-x-2 text-gray-600 mb-4">
+                                <span className="text-sm">Referred by: {report.doctorReferred}</span>
+                              </div>
+                            )}
+
+                            {report.results && (
+                              <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                                <h4 className="font-medium text-gray-900 mb-2">Results</h4>
+                                <p className="text-sm text-gray-700 mb-2">{report.results}</p>
+                                {report.normalRange && (
+                                  <p className="text-xs text-gray-500">Normal Range: {report.normalRange}</p>
+                                )}
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
 
-                      <div className="flex flex-col space-y-2">
-                        <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200">
+                      <div className="flex flex-col space-y-2 ml-4">
+                        <button 
+                          onClick={() => handleViewDocument(report)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                          title="View Document"
+                        >
                           <Eye className="h-4 w-4" />
                         </button>
-                        <button className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors duration-200">
+                        <button 
+                          onClick={() => handleViewDocument(report)}
+                          className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors duration-200"
+                          title="Download PDF"
+                        >
                           <Download className="h-4 w-4" />
                         </button>
                       </div>
                     </div>
                   </div>
-                ))
+                  );
+                })
               )}
             </div>
 
             {/* Summary Cards */}
-            {displayReports.length > 0 && (
-              <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-6">
+            {allLabReports.length > 0 && (
+              <div className="mt-8 grid grid-cols-1 md:grid-cols-5 gap-6">
                 <div className="bg-white rounded-xl shadow-sm p-6 text-center">
                   <div className="bg-purple-100 text-purple-600 p-3 rounded-full inline-block mb-3">
                     <FlaskConical className="h-6 w-6" />
                   </div>
                   <h3 className="font-semibold text-gray-900 mb-1">Total Reports</h3>
-                  <p className="text-2xl font-bold text-purple-600">{displayReports.length}</p>
+                  <p className="text-2xl font-bold text-purple-600">{allLabReports.length}</p>
                 </div>
 
                 <div className="bg-white rounded-xl shadow-sm p-6 text-center">
@@ -319,7 +382,10 @@ const LabReportsPage: React.FC = () => {
                   </div>
                   <h3 className="font-semibold text-gray-900 mb-1">Completed</h3>
                   <p className="text-2xl font-bold text-green-600">
-                    {displayReports.filter(r => r.status === 'completed').length}
+                    {allLabReports.filter(r => {
+                      if ('category' in r) return true; // Scanned docs are considered completed
+                      return r.status === 'completed';
+                    }).length}
                   </p>
                 </div>
 
@@ -329,7 +395,10 @@ const LabReportsPage: React.FC = () => {
                   </div>
                   <h3 className="font-semibold text-gray-900 mb-1">Reviewed</h3>
                   <p className="text-2xl font-bold text-blue-600">
-                    {displayReports.filter(r => r.status === 'reviewed').length}
+                    {allLabReports.filter(r => {
+                      if ('category' in r) return false; // Scanned docs are not "reviewed" status
+                      return r.status === 'reviewed';
+                    }).length}
                   </p>
                 </div>
 
@@ -339,9 +408,20 @@ const LabReportsPage: React.FC = () => {
                   </div>
                   <h3 className="font-semibold text-gray-900 mb-1">This Month</h3>
                   <p className="text-2xl font-bold text-yellow-600">
-                    {displayReports.filter(r => 
-                      new Date(r.reportDate).getMonth() === new Date().getMonth()
-                    ).length}
+                    {allLabReports.filter(r => {
+                      const date = 'category' in r ? r.uploadDate : r.reportDate;
+                      return new Date(date).getMonth() === new Date().getMonth();
+                    }).length}
+                  </p>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm p-6 text-center">
+                  <div className="bg-orange-100 text-orange-600 p-3 rounded-full inline-block mb-3">
+                    <FlaskConical className="h-6 w-6" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-1">Scanned Docs</h3>
+                  <p className="text-2xl font-bold text-orange-600">
+                    {scannedLabReports.length}
                   </p>
                 </div>
               </div>
@@ -349,6 +429,27 @@ const LabReportsPage: React.FC = () => {
           </div>
         </main>
       </div>
+
+      {/* File Upload Modal */}
+      <FileUploadModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        onSave={handleSaveExtractedData}
+      />
+
+      {/* LalPath Labs Modal */}
+      <LalPathLabModal
+        isOpen={showLalPathModal}
+        onClose={() => setShowLalPathModal(false)}
+        onReportFetched={handleLalPathReportFetched}
+      />
+
+      {/* Document View Modal */}
+      <DocumentViewModal
+        isOpen={showViewModal}
+        onClose={() => setShowViewModal(false)}
+        document={selectedDocument}
+      />
     </div>
   );
 };
