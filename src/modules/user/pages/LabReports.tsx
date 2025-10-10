@@ -8,7 +8,6 @@ import { LabReport, ScannedDocument } from '../../../shared/types';
 import toast from 'react-hot-toast';
 import { DocumentViewModal } from './HealthVault/DocumentViewModal';
 import { FileUploadModal } from './HealthVault/Components';
-import { LalPathLabModal } from './Lab report/lalPathLab';
 
 const LabReportsPage: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -19,7 +18,6 @@ const LabReportsPage: React.FC = () => {
   const [selectedDocument, setSelectedDocument] = useState<any>(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [showLalPathModal, setShowLalPathModal] = useState(false);
 
   useEffect(() => {
     fetchLabReportsData();
@@ -112,13 +110,6 @@ const LabReportsPage: React.FC = () => {
     toast.success('Lab report uploaded and processed successfully!');
   };
 
-  const handleLalPathReportFetched = (reportData: any) => {
-    // The report is already added to the database by the backend
-    // Just refresh the data to show the new report
-    fetchLabReportsData();
-    toast.success('LalPath Labs report added to your lab reports!');
-  };
-
   return (
     <div className="h-screen bg-gray-50 flex">
       <UserSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
@@ -134,22 +125,13 @@ const LabReportsPage: React.FC = () => {
                 <h1 className="text-3xl font-bold text-gray-900">Lab Reports</h1>
                 <p className="text-gray-600 mt-1">View and manage your laboratory test results</p>
               </div>
-               <div className="flex items-center space-x-3">
-                 <button
-                   onClick={() => setShowLalPathModal(true)}
-                   className="flex items-center space-x-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors duration-200"
-                 >
-                   <Download className="h-5 w-5" />
-                   <span>Fetch LalPath Report</span>
-                 </button>
-                 <button
-                   onClick={() => setShowUploadModal(true)}
-                   className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200"
-                 >
-                   <Upload className="h-5 w-5" />
-                   <span>Upload Report</span>
-                 </button>
-               </div>
+               <button
+                 onClick={() => setShowUploadModal(true)}
+                 className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200"
+               >
+                 <Upload className="h-5 w-5" />
+                 <span>Upload Report</span>
+               </button>
             </div>
 
             {/* Upload Form */}
@@ -435,13 +417,6 @@ const LabReportsPage: React.FC = () => {
         isOpen={showUploadModal}
         onClose={() => setShowUploadModal(false)}
         onSave={handleSaveExtractedData}
-      />
-
-      {/* LalPath Labs Modal */}
-      <LalPathLabModal
-        isOpen={showLalPathModal}
-        onClose={() => setShowLalPathModal(false)}
-        onReportFetched={handleLalPathReportFetched}
       />
 
       {/* Document View Modal */}
