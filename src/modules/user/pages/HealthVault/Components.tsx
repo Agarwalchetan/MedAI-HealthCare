@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 import { Upload, X, CheckCircle, Loader, FileText, Pill, FlaskConical } from 'lucide-react';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { userAPI } from '../../services/userAPI';
 import { ScannedDocument } from '../../../../shared/types';
 
@@ -101,138 +101,40 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({ isOpen, onClos
         setExtractedText('');
 
         try {
-            //Gemini AI
-            const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
-            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-            //file to base64 conversion (we can upload the direct image to gemini ai but fist we have to upload it any where else and then update it)
-            //so, converting to base64 is an easy and time efficent option for both ai and user
+            // Convert file to base64
             const base64 = await fileToBase64(uploadedFile);
-
             setOcrProgress(25);
-
-            const prompt = `Please extract and analyze all text from this medical document image. 
-
-                            Step 1 - Extract:
-                            - Patient information (name, age, ID)
-                            - Medical conditions and diagnoses
-                            - Prescriptions and medications with dosages
-                            - Lab results and values with normal ranges
-                            - Doctor information
-                            - Dates and timestamps
-                            - Lab or hospital names
-                            - Any other relevant medical information
-
-                            Step 2 - Categorize:
-                            Determine the document type as one of:
-                            - medical-history
-                            - prescription
-                            - lab-report
-                            - other
-
-                            Step 3 - Organize:
-                            Format the key details depending on the category:
-
-                            If this is a medical-history, format as:
-                            - Patient: [name]
-                            - Age: [age]
-                            - ID: [patient ID]
-                            - Diagnosis/Conditions: [list]
-                            - Doctor: [doctor name]
-                            - Date: [date]
-
-                            If this is a prescription, format as:
-                            - Patient: [name]
-                            - Doctor: [name]
-                            - Date: [date]
-                            - Medications: [list with dosage and instructions]
-
-                            If this is a lab report, format as:
-                            - Patient: [name]
-                            - Lab: [name]
-                            - Date: [date]
-                            - Test Results: [list with values and ranges]
-
-                            If this is other, format as:
-                            - Patient: [name]
-                            - Document Type: [type or description]
-                            - Date: [date]
-                            - Key Information: [summary of extracted info]
-
-                            Step 4 - JSON Response:
-                            Return everything in this exact JSON format:
-                            {
-                                "extractedText": "Complete extracted text here",
-                                "category": "medical-history|prescription|lab-report|other",
-                                "analysis": {
-                                    "patientName": "extracted patient name",
-                                    "doctorName": "extracted doctor name", 
-                                    "date": "YYYY-MM-DD format or null",
-                                    "medications": [
-                                        {"name": "medication name", "dosage": "dosage", "frequency": "frequency"}
-                                    ],
-                                    "testResults": [
-                                        {"testName": "test name", "value": "result value", "normalRange": "normal range"}
-                                    ],
-                                    "diagnosis": "diagnosis or condition",
-                                    "labName": "lab or hospital name"
-                                },
-                                "confidence": 0.85
-                            }`;
-
 
             setOcrProgress(50);
 
-            const result = await model.generateContent([
-                prompt,
-                {
-                    inlineData: {
-                        data: base64,
-                        mimeType: uploadedFile.type
-                    }
-                }
-            ]);
+            // Call backend Gemini OCR API (send only base64 and mimeType)
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/ai/gemini-ocr/ocr`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ base64, mimeType: uploadedFile.type })
+            });
 
             setOcrProgress(75);
 
-            const response = await result.response;
-            const text = response.text().trim();
-
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'OCR backend error');
+            }
+            const result = await response.json();
             setOcrProgress(100);
 
-            if (text) {
-                try {
-                    // Try to parse JSON response
-                    const jsonMatch = text.match(/\{[\s\S]*\}/);
-                    if (jsonMatch) {
-                        const parsedData = JSON.parse(jsonMatch[0]);
-                        setExtractedText(parsedData.extractedText || text);
-                        setSelectedCategory(parsedData.category || 'other');
-                        setAiAnalysis(parsedData.analysis || {});
-                    } else {
-                        // Fallback to plain text
-                        setExtractedText(text);
-                        setSelectedCategory('other');
-                        setAiAnalysis({});
-                    }
-                    setShowExtractedText(true);
-                } catch (error) {
-                    // If JSON parsing fails, use the raw text
-                    setExtractedText(text);
-                    setSelectedCategory('other');
-                    setAiAnalysis({});
-                    setShowExtractedText(true);
-                }
-            } else {
-                setUploadError('No text could be extracted from this file. Please try a clearer image.');
-            }
+            const data = result.data || {};
+            setExtractedText(data.extractedText || '');
+            setSelectedCategory(data.category || 'other');
+            setAiAnalysis(data.analysis || {});
+            setShowExtractedText(true);
         } catch (error) {
             console.error('OCR Error:', error);
-            if (error instanceof Error && error.message.includes('API_KEY')) {
-                setUploadError('Gemini API key is not configured. Please check your environment variables.');
-            } else {
-                setUploadError('Failed to extract text from the file. Please try again.');
-            }
+            setUploadError('Failed to extract text from the file. Please try again.');
         } finally {
             setIsProcessing(false);
             setOcrProgress(0);

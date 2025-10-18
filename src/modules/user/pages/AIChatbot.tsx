@@ -2,9 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Loader, Heart, Mic, Play, Pause } from 'lucide-react';
 import UserNavbar from '../components/UserNavbar';
 import UserSidebar from '../components/UserSidebar';
-import { transcribeAudio, textToSpeech, stopMediaStream } from './AIChatbot/deepgram';
+import { transcribeAudio, textToSpeech, stopMediaStream } from './AIChatbot/deepgramAPI';
 import LanguageSelector from './AIChatbot/translate';
-import { TranslateService } from './AIChatbot/translateService';
+import { translationAPIService } from './AIChatbot/translationAPI';
 
 interface Message {
   id: string;
@@ -120,7 +120,7 @@ const AIChatbot: React.FC = () => {
         setIsTranslating(true);
         try {
           const initialMessage = messages[0];
-          const translatedText = await TranslateService.translateFromEnglish(
+          const translatedText = await translationAPIService.translateFromEnglish(
             'Hello! I\'m your AI health assistant. I can help you with preliminary health assessments, symptom analysis, and general health information. How can I assist you today?',
             selectedLanguage
           );
@@ -173,7 +173,7 @@ const AIChatbot: React.FC = () => {
       // Translate user input to English if not already in English
       let englishText = textToSend;
       if (selectedLanguage !== 'en') {
-        const translationResult = await TranslateService.translateToEnglish(textToSend, selectedLanguage);
+        const translationResult = await translationAPIService.translateToEnglish(textToSend, selectedLanguage);
         englishText = translationResult.translatedText;
       }
 
@@ -186,7 +186,7 @@ const AIChatbot: React.FC = () => {
       let finalResponse = englishResponse;
       if (selectedLanguage !== 'en') {
         setIsTranslating(true);
-        const responseTranslation = await TranslateService.translateFromEnglish(englishResponse, selectedLanguage);
+        const responseTranslation = await translationAPIService.translateFromEnglish(englishResponse, selectedLanguage);
         finalResponse = responseTranslation.translatedText;
       }
 

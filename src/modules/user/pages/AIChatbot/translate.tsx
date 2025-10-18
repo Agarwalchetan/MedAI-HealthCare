@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Globe, ChevronDown, Check, Search, X } from 'lucide-react';
-import { SUPPORTED_LANGUAGES, Language } from './translateService';
+import { translationAPIService, Language } from './translationAPI';
 
 interface LanguageSelectorProps {
   selectedLanguage: string;
@@ -15,22 +15,38 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [supportedLanguages, setSupportedLanguages] = useState<Language[]>([]);
 
-  const selectedLang = SUPPORTED_LANGUAGES.find((lang: Language) => lang.code === selectedLanguage) || SUPPORTED_LANGUAGES[0];
+  // Load supported languages on component mount
+  React.useEffect(() => {
+    const loadLanguages = async () => {
+      try {
+        const languages = await translationAPIService.getSupportedLanguages();
+        setSupportedLanguages(languages);
+      } catch (error) {
+        console.error('Failed to load languages from API, using fallback:', error);
+        // Use static fallback if API fails
+        setSupportedLanguages(translationAPIService.getStaticSupportedLanguages());
+      }
+    };
+    loadLanguages();
+  }, []);
+
+  const selectedLang = supportedLanguages.find((lang: Language) => lang.code === selectedLanguage) || supportedLanguages[0] || { code: 'en', name: 'English', nativeName: 'English' };
 
   // Filter languages based on search query
   const filteredLanguages = useMemo(() => {
     if (!searchQuery.trim()) {
-      return SUPPORTED_LANGUAGES;
+      return supportedLanguages;
     }
     
     const query = searchQuery.toLowerCase();
-    return SUPPORTED_LANGUAGES.filter((language: Language) => 
+    return supportedLanguages.filter((language: Language) => 
       language.name.toLowerCase().includes(query) ||
       language.nativeName.toLowerCase().includes(query) ||
       language.code.toLowerCase().includes(query)
     );
-  }, [searchQuery]);
+  }, [searchQuery, supportedLanguages]);
 
   const handleLanguageSelect = (languageCode: string) => {
     onLanguageChange(languageCode);

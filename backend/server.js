@@ -11,7 +11,11 @@ import doctorRoutes from './modules/doctor/routes/doctorRoutes.js';
 import appointmentRoutes from './modules/user/routes/appointmentRoutes.js';
 import adminRoutes from './modules/admin/routes/adminRoutes.js';
 import aiRoutes from './modules/ai/routes/aiRoutes.js';
+import deepgramRoutes from './modules/ai/routes/deepgramRoutes.js';
+import translationRoutes from './modules/ai/routes/translationRoutes.js';
+import geminiOcrRoutes from './modules/ai/routes/geminiOcrRoutes.js';
 import labRoutes from './modules/lab/routes/labRoutes.js';
+import mapsRoutes from './modules/maps/mapsRoutes.js';
 
 // Load environment variables from project root
 dotenv.config({ path: '../.env' });
@@ -55,9 +59,13 @@ app.get('/api/health', (req, res) => {
 // API Routes
 app.use('/api/users', userRoutes);
 app.use('/api/doctors', doctorRoutes);
+app.use('/api/maps', mapsRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/ai/deepgram', deepgramRoutes);
+app.use('/api/ai/translation', translationRoutes);
+app.use('/api/ai/gemini-ocr', geminiOcrRoutes);
 app.use('/api/labs', labRoutes);
 
 // 404 handler
