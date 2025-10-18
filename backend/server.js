@@ -14,6 +14,7 @@ import aiRoutes from './modules/ai/routes/aiRoutes.js';
 import deepgramRoutes from './modules/ai/routes/deepgramRoutes.js';
 import translationRoutes from './modules/ai/routes/translationRoutes.js';
 import geminiOcrRoutes from './modules/ai/routes/geminiOcrRoutes.js';
+import geminiChatRoutes from './modules/ai/routes/geminiChatRoutes.js';
 import labRoutes from './modules/lab/routes/labRoutes.js';
 import mapsRoutes from './modules/maps/mapsRoutes.js';
 
@@ -60,6 +61,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/users', userRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/maps', mapsRoutes);
+app.use('/api/ai', geminiChatRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/ai', aiRoutes);
