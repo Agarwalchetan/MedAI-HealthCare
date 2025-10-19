@@ -1,0 +1,90 @@
+# Backend API Routes Overview
+
+
+## User
+- **GET /api/users/document-counts** — Get counts of medical history, prescriptions, lab reports, and scanned documents (auth required)
+	- Response: `{ success: true, data: { medicalHistoryCount, prescriptionsCount, labReportsCount, scannedDocumentsCount } }`
+- **POST /api/users/register** — Register a new user
+	- Request: `{ name, email, password, ...otherProfileFields }`
+	- Response: `{ success: true, message, data: { user, token } }` (sets auth cookie)
+- **POST /api/users/login** — User login
+	- Request: `{ email, password }`
+	- Response: `{ success: true, message, data: { user, token } }` (sets auth cookie)
+- **POST /api/users/logout** — User logout
+	- Request: (no body, requires auth cookie)
+	- Response: `{ success: true, message }` (clears auth cookie)
+- **GET /api/users/profile** — Get user profile (auth required)
+	- Response: `{ success: true, data: { user } }`
+- **PUT /api/users/profile** — Update user profile (auth required)
+	- Request: `{ ...profileFieldsToUpdate }`
+	- Response: `{ success: true, message, data: { user } }`
+- **GET /api/users/medical-history** — Get medical history (auth required)
+	- Response: `{ success: true, data: { medicalHistory } }`
+- **POST /api/users/medical-history** — Add medical history (auth required)
+	- Request: `{ ...medicalRecordFields }`
+	- Response: `{ success: true, message, data: { medicalRecord } }`
+- **GET /api/users/prescriptions** — Get prescriptions (auth required)
+	- Response: `{ success: true, data: { prescriptions } }`
+- **POST /api/users/prescriptions** — Add prescription (auth required)
+	- Request: `{ ...prescriptionFields }`
+	- Response: `{ success: true, message, data: { prescription } }`
+- **GET /api/users/lab-reports** — Get lab reports (auth required)
+	- Response: `{ success: true, data: { labReports } }`
+- **POST /api/users/lab-reports** — Add lab report (auth required)
+	- Request: `{ ...labReportFields }`
+	- Response: `{ success: true, message, data: { labReport } }`
+- **GET /api/users/insurance** — Get insurance details (auth required)
+	- Response: `{ success: true, data: { insurance } }`
+- **PUT /api/users/insurance** — Update insurance (auth required)
+	- Request: `{ ...insuranceFieldsToUpdate }`
+	- Response: `{ success: true, message, data: { insurance } }`
+- **GET /api/users/scanned-documents** — Get scanned documents (auth required)
+	- Response: `{ success: true, data: { scannedDocuments } }`
+- **POST /api/users/scanned-documents** — Add scanned document (auth required)
+	- Request: `{ ...scannedDocumentFields }`
+	- Response: `{ success: true, message, data: { scannedDocument } }`
+- **DELETE /api/users/scanned-documents/:documentId** — Delete scanned document (auth required)
+	- Response: `{ success: true, message }`
+
+## Doctor
+- **POST /api/doctors/register** — Register a new doctor
+- **POST /api/doctors/login** — Doctor login
+- **GET /api/doctors/profile** — Get doctor profile (auth required)
+- **PUT /api/doctors/profile** — Update doctor profile (auth required)
+
+## Appointments
+- **POST /api/users/appointments** — Book an appointment
+- **GET /api/users/appointments** — Get user appointments
+- **GET /api/doctors/appointments** — Get doctor appointments
+- **PUT /api/users/appointments/:id/cancel** — Cancel appointment
+
+## Admin
+- **POST /api/admin/login** — Admin login
+- **GET /api/admin/dashboard** — Admin dashboard data
+- **GET /api/admin/notifications** — Get admin notifications
+- **POST /api/admin/medicine** — Add new medicine
+- **GET /api/admin/medicine** — List medicines
+- **POST /api/admin/approve-doctor** — Approve doctor registration
+
+## AI
+- **POST /api/ai/diagnosis** — Get AI health diagnosis
+- **POST /api/ai/chat** — Gemini AI chat (health Q&A)
+- **POST /api/ai/gemini-ocr/ocr** — Gemini OCR (image to text)
+- **POST /api/ai/deepgram/transcribe** — Deepgram audio transcription
+- **POST /api/ai/deepgram/tts** — Deepgram text-to-speech
+- **POST /api/ai/translate** — Sarvam translation
+- **GET /api/ai/translate/languages** — Get supported translation languages
+
+## Lab
+- **POST /api/lab/request** — Request a lab test
+- **GET /api/lab/reports** — Get lab reports
+- **GET /api/lab/list** — List available labs
+
+## Maps
+- **POST /api/maps/nearby** — Find nearby hospitals/medical facilities
+- **POST /api/maps/search** — Search hospitals/clinics by text
+- **POST /api/maps/geocode** — Reverse geocode coordinates to address
+
+---
+
+> This file lists the main backend API endpoints, their HTTP method, and a short description of what each does. For more details, see the corresponding route/controller files in the backend codebase.
