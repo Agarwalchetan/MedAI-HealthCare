@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import userRoutes from './modules/user/routes/userRoutes.js';
+import userSummaryRoutes from './modules/user/routes/userSummaryRoutes.js';
 import doctorRoutes from './modules/doctor/routes/doctorRoutes.js';
 import appointmentRoutes from './modules/user/routes/appointmentRoutes.js';
 import adminRoutes from './modules/admin/routes/adminRoutes.js';
@@ -30,7 +31,7 @@ connectDB();
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173' || "http://localhost:5174",
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173' || "http://localhost:5174" || "http://localhost:8081",
   credentials: true,
 }));
 
@@ -59,6 +60,7 @@ app.get('/api/health', (req, res) => {
 
 // API Routes
 app.use('/api/users', userRoutes);
+app.use('/api/users', userSummaryRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/maps', mapsRoutes);
 app.use('/api/ai', geminiChatRoutes);
