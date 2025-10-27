@@ -23,15 +23,32 @@ import mapsRoutes from './modules/maps/mapsRoutes.js';
 dotenv.config({ path: '../.env' });
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000 ;
 
 // Connect to MongoDB
 connectDB();
 
 // Security middleware
 app.use(helmet());
+
+// CORS: support a list of allowed origins provided via FRONTEND_URL env var.
+// FRONTEND_URL may contain multiple origins separated by '||', ',', or whitespace.
+const rawFrontends = process.env.FRONTEND_URL || 'http://localhost:5173';
+const allowedOrigins = rawFrontends
+  .split(/\s*\|\|\s*|\s*,\s*|\s+/)
+  .map(s => s.trim())
+  .filter(Boolean);
+console.log('Allowed CORS origins:', allowedOrigins);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173' || "http://localhost:5174" || "http://localhost:8081",
+  origin: (origin, callback) => {
+    // If no origin (e.g. server-to-server or curl), allow it
+    if (!origin) return callback(null, true);
+    // Allow if request origin is in the allowlist
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    // Otherwise reject
+    return callback(new Error('CORS policy: origin not allowed'));
+  },
   credentials: true,
 }));
 

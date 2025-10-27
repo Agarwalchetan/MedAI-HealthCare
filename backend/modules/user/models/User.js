@@ -149,7 +149,13 @@ const userSchema = new mongoose.Schema({
   isEmailVerified: { type: Boolean, default: false },
   isPhoneVerified: { type: Boolean, default: false },
   lastLogin: { type: Date },
-  isActive: { type: Boolean, default: true }
+  isActive: { type: Boolean, default: true },
+  active_medicine: [{
+    name: { type: String, required: true },
+    timeToTake: { type: String, required: true },
+    daysGap: { type: Number, required: true },
+    startDate: { type: Date, required: true }
+  }]
 }, {
   timestamps: true
 });

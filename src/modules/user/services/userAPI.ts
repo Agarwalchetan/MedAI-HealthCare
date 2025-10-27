@@ -1,5 +1,5 @@
 import api from '../../../shared/utils/api';
-import { AuthResponse, ApiResponse, User, MedicalHistory, Prescription, LabReport, Insurance, Appointment, Doctor, ScannedDocument } from '../../../shared/types';
+import { AuthResponse, ApiResponse, User, MedicalHistory, Prescription, LabReport, Insurance, Appointment, Doctor, ScannedDocument, ActiveMedicine } from '../../../shared/types';
 
 export const userAPI = {
   // Authentication
@@ -116,6 +116,16 @@ export const userAPI = {
 
   deleteScannedDocument: async (documentId: string): Promise<ApiResponse> => {
     const response = await api.delete(`/users/scanned-documents/${documentId}`);
+    return response.data;
+  },
+
+  // Active Medicines
+  getActiveMedicine: async (): Promise<ApiResponse<{ active_medicine: ActiveMedicine[] }>> => {
+    const response = await api.get('/users/active-medicine');
+    return response.data;
+  },
+  updateActiveMedicine: async (medicines: ActiveMedicine[]): Promise<ApiResponse<{ active_medicine: ActiveMedicine[] }>> => {
+    const response = await api.put('/users/active-medicine', medicines);
     return response.data;
   }
 };

@@ -15,7 +15,9 @@ import {
   updateInsurance,
   getScannedDocuments,
   addScannedDocument,
-  deleteScannedDocument
+  deleteScannedDocument,
+  getActiveMedicine,
+  updateActiveMedicine
 } from '../controllers/userController.js';
 import { authenticate } from '../../../middlewares/authMiddleware.js';
 import { 
@@ -60,5 +62,9 @@ router.put('/insurance', updateInsurance);
 router.get('/scanned-documents', getScannedDocuments);
 router.post('/scanned-documents', addScannedDocument);
 router.delete('/scanned-documents/:documentId', deleteScannedDocument);
+
+// Active Medicines
+router.get('/active-medicine', authenticate, getActiveMedicine);
+router.put('/active-medicine', authenticate, updateActiveMedicine);
 
 export default router;

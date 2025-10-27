@@ -21,6 +21,7 @@ export interface User {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
+  active_medicine: ActiveMedicine[];
 }
 
 export interface Address {
@@ -398,4 +399,11 @@ export interface LabReportData {
   };
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface ActiveMedicine {
+  name: string;
+  timeToTake: string;
+  daysGap: number;
+  startDate: Date;
 }
