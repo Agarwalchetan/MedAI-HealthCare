@@ -15,10 +15,11 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^3.10.0",
+    "@react-email/components": "^0.5.3",
     "@types/react-router-dom": "^5.3.3",
     "axios": "^1.7.9",
     "bcryptjs": "^3.0.2",
-    "cloudinary": "^2.6.0",
+    "cloudinary": "^2.7.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
@@ -44,6 +45,7 @@
     "react-is": "^19.1.1",
     "react-router-dom": "^6.29.0",
     "recharts": "^3.1.2",
+    "resend": "^6.0.3",
     "yup": "^1.4.0"
   },
   "devDependencies": {

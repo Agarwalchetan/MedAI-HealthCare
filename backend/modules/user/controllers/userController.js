@@ -1,10 +1,37 @@
 import { UserService } from '../services/userService.js';
 import { asyncHandler } from '../../../middlewares/errorHandler.js';
+import cloudinary from "cloudinary" 
+import User from '../models/User.js';
+
 
 export const registerUser = asyncHandler(async (req, res) => {
   const user = await UserService.createUser(req.body);
   const token = UserService.generateToken(user._id);
+  await UserService.sendVerificationEmail(user.email,user.emailVerificationCode)
+try{if(req.file){
+  const aadharPhoto=await cloudinary.v2.uploader.upload(req.file.path,{
+    folder:"user aadhar",
+    widdth:250,
+    height:250,
+  
+    crop:"fill"
+})
+if(aadharPhoto){
+    user.aadhar.public_id=aadharPhoto.public_id;
+    user.aadhar.secure_url=aadharPhoto.secure_url 
+    // remove from local server
+    fs.rm(`uploads/${req.file.filename}`)
+}
+}
 
+
+}catch(e){
+  res.status(400).json({
+    success: false,
+    message: 'failed to upload aadhar photo ',
+
+  });
+}
   res.cookie('token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -39,6 +66,11 @@ export const loginUser = asyncHandler(async (req, res) => {
   });
 });
 
+
+
+
+
+
 export const logoutUser = asyncHandler(async (req, res) => {
   res.clearCookie('token');
   res.status(200).json({
@@ -46,6 +78,75 @@ export const logoutUser = asyncHandler(async (req, res) => {
     message: 'Logout successful'
   });
 });
+
+export const verifyUserEmail=asyncHandler(async(req,res)=>{
+  try {
+    const { userId, code } = req.body;
+
+    // 1. Find the user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+    
+    // 2. Check if the code is correct and not expired
+    if (user.emailVerificationCode !== code) {
+      return res.status(400).json({ success: false, message: 'Invalid verification code.' });
+    }
+
+    if (new Date() > user.emailVerificationExpires) {
+      return res.status(400).json({ success: false, message: 'Verification code has expired.' });
+    }
+
+    // 3. Update the user's status
+    user.isEmailVerified = true;
+    user.emailVerificationCode = null; // Clear the code
+    user.emailVerificationExpires = null; // Clear the expiration
+    await user.save();
+    
+    // 4. Respond with success
+    // You can also generate and send a JWT token here for automatic login
+    res.status(200).json({ success: true, message: 'Email verified successfully!' });
+
+  } catch (error) {
+    console.error('Verification Error:', error);
+    res.status(500).json({ success: false, message: 'An internal server error occurred.' });
+  }
+})
+
+export const resendCode=asyncHandler(async(req,res)=>{
+try {
+  const {userId}=req.body
+     const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found.' });
+        }
+
+        if (user.emailVerified) {
+            return res.status(400).json({ success: false, message: 'This email is already verified.' });
+        }
+
+        // 1. Generate a new code and expiration
+        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const verificationExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+        // 2. Update user document
+        user.emailVerificationCode = verificationCode;
+        user.emailVerificationExpires = verificationExpires;
+        await user.save();
+try{ await UserService.sendVerificationEmail(user.email,verificationCode)
+    res.status(200).json({ success: true, message: 'A new verification code has been sent.' });
+
+}
+catch(e){
+   console.error('Resend Code Error:', error);
+        res.status(500).json({ success: false, message: 'An internal server error occurred.' });
+
+}
+} catch (error) {
+  throw error 
+}
+})
 
 export const getUserProfile = asyncHandler(async (req, res) => {
   const user = await UserService.getUserById(req.user._id);

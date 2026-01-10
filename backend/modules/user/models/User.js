@@ -112,6 +112,12 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Password is required'],
     minLength: [8, 'Password must be at least 8 characters']
   },
+   verifyCode:{type:String,required:[true,"verify code is not available"]},
+    verifyCodeExpiry:{
+        type:Date,
+        required:[true,"verify code expiry is not available"]
+
+    },
   role: {
     type: String,
     enum: ['patient', 'doctor', 'lab', 'insurance', 'admin', 'manager'],
@@ -133,10 +139,25 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Phone number is required'],
     match: [/^[0-9]{10}$/, 'Please enter a valid 10-digit phone number']
   },
+
   healthId: {
     type: String,
     unique: true,
     sparse: true
+  },
+aadhar:{
+    public_id:{type:String}
+},
+secure_url:{
+    type:String
+},
+ emailVerificationCode: {
+    type: String,
+    default: null,
+  },
+  emailVerificationExpires: {
+    type: Date,
+    default: null,
   },
   address: addressSchema,
   emergencyContact: emergencyContactSchema,

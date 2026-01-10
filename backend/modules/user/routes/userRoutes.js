@@ -13,11 +13,8 @@ import {
   addLabReport,
   getInsuranceDetails,
   updateInsurance,
-  getScannedDocuments,
-  addScannedDocument,
-  deleteScannedDocument,
-  getActiveMedicine,
-  updateActiveMedicine
+  verifyUserEmail,
+  resendCode
 } from '../controllers/userController.js';
 import { authenticate } from '../../../middlewares/authMiddleware.js';
 import { 
@@ -29,9 +26,12 @@ import {
 const router = express.Router();
 
 // Authentication routes
-router.post('/register', validateUserRegistration, registerUser);
+router.post('/register', validateUserRegistration, upload.single("aadhar"),  registerUser);
 router.post('/login', validateUserLogin, loginUser);
+
 router.post('/logout', logoutUser);
+router.post('/verifyEmail', verifyUserEmail);
+router.post('/resendCode', resendCode);
 
 // Protected routes (require authentication)
 router.use(authenticate); // All routes below require authentication

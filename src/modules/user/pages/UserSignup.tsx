@@ -3,9 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Eye, EyeOff, Heart, User, Mail, Lock, Phone, Calendar } from 'lucide-react';
+import { Eye, EyeOff, Heart, User, Mail, Lock, Phone, Calendar, Camera } from 'lucide-react';
 import { useAuth } from '../../../shared/hooks/useAuth';
 import toast from 'react-hot-toast';
+// Define constants for file validation
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const SUPPORTED_IMAGE_FORMATS = ['image/jpg', 'image/jpeg', 'image/png'];
 
 const schema = yup.object({
   fullName: yup.string().min(2).max(50).required('Full name is required'),
@@ -30,6 +33,19 @@ const schema = yup.object({
     .matches(/^[0-9]{10}$/, 'Phone number must be exactly 10 digits')
     .required('Emergency contact phone is required'),
   emergencyContactRelationship: yup.string().required('Relationship is required'),
+  aadhar: yup
+    .mixed<FileList>()
+    .required('Aadhar photo is required')
+    .test(
+      'fileSize',
+      'File is too large. Max size is 5MB.',
+      (value) => value && value.length > 0 && value[0].size <= MAX_FILE_SIZE
+    )
+    .test(
+      'fileType',
+      'Unsupported file format. Use JPG, JPEG, or PNG.',
+      (value) => value && value.length > 0 && SUPPORTED_IMAGE_FORMATS.includes(value[0].type)
+    ),
 });
 
 interface SignupFormData {
@@ -44,6 +60,7 @@ interface SignupFormData {
   emergencyContactName: string;
   emergencyContactPhone: string;
   emergencyContactRelationship: string;
+    aadhar: FileList;
 }
 
 const UserSignup: React.FC = () => {
@@ -81,7 +98,7 @@ const UserSignup: React.FC = () => {
 
       await registerUser(userData);
       toast.success('Account created successfully!');
-      navigate('/user/dashboard');
+      navigate('/user/verifyEmail');
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Registration failed');
     } finally {
@@ -90,7 +107,7 @@ const UserSignup: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-12 px-4">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-12 px-4">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
@@ -310,7 +327,29 @@ const UserSignup: React.FC = () => {
                   <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
                 )}
               </div>
-
+                 {/* Aadhar Card Photo Input */}
+              <div className="mb-4">
+                  <label htmlFor="aadhar" className="block text-sm font-medium text-gray-700 mb-2">
+                      Aadhar Card Photo
+                  </label>
+                  <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Camera className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                          {...register('aadhar')}
+                          type="file"
+                          id="aadhar"
+                          accept="image/png, image/jpeg, image/jpg"
+                          className={`block w-full pl-10 pr-3 py-2.5 text-sm text-gray-900 border rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                              errors.aadhar ? 'border-red-300' : 'border-gray-300'
+                          }`}
+                      />
+                  </div>
+                  {errors.aadhar && (
+                      <p className="mt-1 text-sm text-red-600">{errors.aadhar.message}</p>
+                  )}
+              </div>
               {/* Health ID (Optional) */}
               <div className="mb-4">
                 <label htmlFor="healthId" className="block text-sm font-medium text-gray-700 mb-2">
