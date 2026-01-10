@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader, Heart, Mic, MicOff, Play, Pause } from 'lucide-react';
+import { Send, Bot, User, Loader, Heart, Mic, Play, Pause } from 'lucide-react';
 import UserNavbar from '../components/UserNavbar';
 import UserSidebar from '../components/UserSidebar';
-import { transcribeAudio, textToSpeech, stopMediaStream } from './AIChatbot/deepgram';
+import { transcribeAudio, textToSpeech, stopMediaStream } from './AIChatbot/deepgramAPI';
 import LanguageSelector from './AIChatbot/translate';
-import { TranslateService } from './AIChatbot/translateService';
+import { translationAPIService } from './AIChatbot/translationAPI';
+import { geminiChatAPI } from './AIChatbot/gemini/geminiAPI';
 
 interface Message {
   id: string;
@@ -16,6 +17,44 @@ interface Message {
 }
 
 const AIChatbot: React.FC = () => {
+  // custom CSS for recording animation
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes waveform {
+        0%, 100% { 
+          height: 4px; 
+          opacity: 0.4;
+        }
+        50% { 
+          height: 20px; 
+          opacity: 1;
+        }
+      }
+      .waveform-bar {
+        animation: waveform 1.5s ease-in-out infinite;
+        background: #374151;
+        border-radius: 2px;
+      }
+      @keyframes pulse-ring {
+        0% {
+          transform: scale(0.95);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1.4);
+          opacity: 0;
+        }
+      }
+      .recording-pulse {
+        animation: pulse-ring 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [messages, setMessages] = useState<Message[]>([
@@ -35,15 +74,45 @@ const AIChatbot: React.FC = () => {
   const [currentStream, setCurrentStream] = useState<MediaStream | null>(null);
   const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const formatRecordingTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // recording timer effect
+  useEffect(() => {
+    if (isRecording) {
+      setRecordingTime(0);
+      recordingIntervalRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+    } else {
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+        recordingIntervalRef.current = null;
+      }
+      setRecordingTime(0);
+    }
+
+    return () => {
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+      }
+    };
+  }, [isRecording]);
 
   // Translate initial message when language changes
   useEffect(() => {
@@ -52,7 +121,7 @@ const AIChatbot: React.FC = () => {
         setIsTranslating(true);
         try {
           const initialMessage = messages[0];
-          const translatedText = await TranslateService.translateFromEnglish(
+          const translatedText = await translationAPIService.translateFromEnglish(
             'Hello! I\'m your AI health assistant. I can help you with preliminary health assessments, symptom analysis, and general health information. How can I assist you today?',
             selectedLanguage
           );
@@ -105,20 +174,20 @@ const AIChatbot: React.FC = () => {
       // Translate user input to English if not already in English
       let englishText = textToSend;
       if (selectedLanguage !== 'en') {
-        const translationResult = await TranslateService.translateToEnglish(textToSend, selectedLanguage);
+        const translationResult = await translationAPIService.translateToEnglish(textToSend, selectedLanguage);
         englishText = translationResult.translatedText;
       }
 
       setIsTranslating(false);
 
-      // Generate AI response in English
-      const englishResponse = generateAIResponse(englishText);
+      // Get AI response from Gemini API (in English)
+      const englishResponse = await geminiChatAPI(englishText);
 
       // Translate AI response back to user's language if needed
       let finalResponse = englishResponse;
       if (selectedLanguage !== 'en') {
         setIsTranslating(true);
-        const responseTranslation = await TranslateService.translateFromEnglish(englishResponse, selectedLanguage);
+        const responseTranslation = await translationAPIService.translateFromEnglish(englishResponse, selectedLanguage);
         finalResponse = responseTranslation.translatedText;
       }
 
@@ -148,25 +217,7 @@ const AIChatbot: React.FC = () => {
     }
   };
 
-  const generateAIResponse = (userInput: string): string => {
-    const input = userInput.toLowerCase();
 
-    if (input.includes('fever') || input.includes('temperature')) {
-      return 'A fever is typically a sign that your body is fighting an infection. For temperatures above 100.4°F (38°C), consider rest, hydration, and over-the-counter fever reducers. If fever persists for more than 3 days or is accompanied by severe symptoms, please consult a healthcare provider immediately.';
-    } else if (input.includes('headache')) {
-      return 'Headaches can have various causes including stress, dehydration, eye strain, or underlying conditions. Try staying hydrated, getting adequate rest, and applying a cold or warm compress. If headaches are severe, frequent, or accompanied by other symptoms like vision changes, please seek medical attention.';
-    } else if (input.includes('cough')) {
-      return 'Coughs can be dry or productive and may indicate respiratory irritation or infection. Stay hydrated, use honey for throat soothing, and consider humidifying your environment. If the cough persists for more than 2 weeks or is accompanied by blood, fever, or difficulty breathing, consult a doctor.';
-    } else if (input.includes('chest pain')) {
-      return '⚠️ Chest pain can be serious. If you\'re experiencing severe chest pain, shortness of breath, or pain radiating to your arm, jaw, or back, seek immediate emergency medical attention by calling 911. For mild chest discomfort, monitor symptoms closely and consult a healthcare provider.';
-    } else if (input.includes('diabetes') || input.includes('blood sugar')) {
-      return 'Diabetes management involves monitoring blood glucose levels, maintaining a healthy diet, regular exercise, and medication compliance. Keep track of your blood sugar readings, follow your prescribed meal plan, and take medications as directed. Regular check-ups with your healthcare provider are essential.';
-    } else if (input.includes('blood pressure') || input.includes('hypertension')) {
-      return 'High blood pressure management includes reducing sodium intake, maintaining a healthy weight, regular exercise, limiting alcohol, and taking prescribed medications. Monitor your blood pressure regularly and keep a log. Lifestyle changes can significantly impact blood pressure control.';
-    } else {
-      return 'Thank you for your question. Based on the symptoms or concerns you\'ve described, I recommend maintaining a healthy lifestyle with proper nutrition, regular exercise, and adequate sleep. However, for accurate diagnosis and treatment, please consult with a qualified healthcare provider who can perform a proper examination and review your medical history.';
-    }
-  };
 
   const startRecording = async () => {
     try {
@@ -319,143 +370,168 @@ const AIChatbot: React.FC = () => {
                 </div>
               </div>
 
-              {/* Chat Container */}
-              <div className="flex-1 bg-white rounded-xl shadow-sm flex flex-col">
-                {/* Chat Messages */}
-                <div className="flex-1 p-6 overflow-y-auto">
-                  <div className="space-y-4">
-                    {messages.map((message) => (
+              {/* Chat Messages */}
+              <div className="flex-1 p-6 overflow-y-auto">
+                <div className="space-y-4">
+                  {messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
                       <div
-                        key={message.id}
-                        className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                        className={`flex items-start space-x-3 max-w-xs md:max-w-md lg:max-w-lg ${message.sender === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}
                       >
+                        {/* Avatar */}
                         <div
-                          className={`flex items-start space-x-3 max-w-xs md:max-w-md lg:max-w-lg ${message.sender === 'user' ? 'flex-row-reverse space-x-reverse' : ''
+                          className={`p-2 rounded-full ${message.sender === 'user'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gradient-to-r from-green-500 to-green-600 text-white'
                             }`}
                         >
-                          {/* Avatar */}
-                          <div
-                            className={`p-2 rounded-full ${message.sender === 'user'
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-gradient-to-r from-green-500 to-green-600 text-white'
-                              }`}
-                          >
-                            {message.sender === 'user' ? (
-                              <User className="h-4 w-4" />
-                            ) : (
-                              <Bot className="h-4 w-4" />
+                          {message.sender === 'user' ? (
+                            <User className="h-4 w-4" />
+                          ) : (
+                            <Bot className="h-4 w-4" />
+                          )}
+                        </div>
+
+                        {/* Message Bubble */}
+                        <div
+                          className={`px-4 py-3 rounded-2xl ${message.sender === 'user'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-900'
+                            }`}
+                        >
+                          <p className="text-sm leading-relaxed">{message.text}</p>
+                          <div className="flex items-center justify-between mt-2">
+                            <p
+                              className={`text-xs ${message.sender === 'user' ? 'text-blue-200' : 'text-gray-500'}`}
+                            >
+                              {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                            {message.sender === 'ai' && (
+                              <button
+                                onClick={() => handleTextToSpeech(message.text, message.id)}
+                                className="ml-2 p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
+                                title="Play audio"
+                              >
+                                {playingMessageId === message.id ? (
+                                  <Pause className="h-3 w-3 text-gray-600" />
+                                ) : (
+                                  <Play className="h-3 w-3 text-gray-600" />
+                                )}
+                              </button>
                             )}
                           </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
 
-                          {/* Message Bubble */}
-                          <div
-                            className={`px-4 py-3 rounded-2xl ${message.sender === 'user'
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-gray-100 text-gray-900'
-                              }`}
-                          >
-                            <p className="text-sm leading-relaxed">{message.text}</p>
-                            <div className="flex items-center justify-between mt-2">
-                              <p
-                                className={`text-xs ${message.sender === 'user' ? 'text-blue-200' : 'text-gray-500'
-                                  }`}
-                              >
-                                {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </p>
-                              {message.sender === 'ai' && (
-                                <button
-                                  onClick={() => handleTextToSpeech(message.text, message.id)}
-                                  className="ml-2 p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
-                                  title="Play audio"
-                                >
-                                  {playingMessageId === message.id ? (
-                                    <Pause className="h-3 w-3 text-gray-600" />
-                                  ) : (
-                                    <Play className="h-3 w-3 text-gray-600" />
-                                  )}
-                                </button>
-                              )}
-                            </div>
+                  {/* Loading indicator */}
+                  {(isLoading || isTranslating) && (
+                    <div className="flex justify-start">
+                      <div className="flex items-start space-x-3">
+                        <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-2 rounded-full">
+                          <Bot className="h-4 w-4" />
+                        </div>
+                        <div className="bg-gray-100 px-4 py-3 rounded-2xl">
+                          <div className="flex items-center space-x-2">
+                            <Loader className="h-4 w-4 animate-spin text-gray-500" />
+                            <span className="text-sm text-gray-500">
+                              {isTranslating ? 'Translating...' : 'AI is thinking...'}
+                            </span>
                           </div>
                         </div>
                       </div>
+                    </div>
+                  )}
+
+                  <div ref={messagesEndRef} />
+                </div>
+              </div>
+
+              {/* Quick Questions */}
+              {messages.length === 1 && (
+                <div className="px-6 py-4 border-t border-gray-200">
+                  <p className="text-sm font-medium text-gray-700 mb-3">Quick questions to get started:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {quickQuestions.map((question, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setInputMessage(question)}
+                        className="text-sm bg-blue-50 text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors duration-200"
+                      >
+                        {question}
+                      </button>
                     ))}
-
-                    {/* Loading indicator */}
-                    {(isLoading || isTranslating) && (
-                      <div className="flex justify-start">
-                        <div className="flex items-start space-x-3">
-                          <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-2 rounded-full">
-                            <Bot className="h-4 w-4" />
-                          </div>
-                          <div className="bg-gray-100 px-4 py-3 rounded-2xl">
-                            <div className="flex items-center space-x-2">
-                              <Loader className="h-4 w-4 animate-spin text-gray-500" />
-                              <span className="text-sm text-gray-500">
-                                {isTranslating ? 'Translating...' : 'AI is thinking...'}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    <div ref={messagesEndRef} />
                   </div>
                 </div>
+              )}
 
-                {/* Quick Questions */}
-                {messages.length === 1 && (
-                  <div className="px-6 py-4 border-t border-gray-200">
-                    <p className="text-sm font-medium text-gray-700 mb-3">Quick questions to get started:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {quickQuestions.map((question, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setInputMessage(question)}
-                          className="text-sm bg-blue-50 text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors duration-200"
-                        >
-                          {question}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Input Area */}
-                <div className="p-6 border-t border-gray-200">
-                  <div className="flex space-x-4">
+              {/* Input Area */}
+              <div className="p-6 border-t border-gray-200">
+                <div className="flex space-x-4">
+                  <div className="flex-1 relative">
                     <input
                       type="text"
                       value={inputMessage}
                       onChange={(e) => setInputMessage(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                      placeholder="Describe your symptoms or health concerns..."
-                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder={isRecording ? "Recording audio..." : "Describe your symptoms or health concerns..."}
+                      disabled={isRecording}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-500"
                     />
-                    <button
-                      onClick={handleVoiceToggle}
-                      disabled={isLoading || isTranslating}
-                      className={`p-3 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${isRecording
-                        ? 'bg-red-600 hover:bg-red-700 text-white'
-                        : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                        }`}
-                    >
-                      {isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-                    </button>
-                    <button
-                      onClick={() => handleSendMessage()}
-                      disabled={!inputMessage.trim() || isLoading || isTranslating}
-                      className="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <Send className="h-5 w-5" />
-                    </button>
+                    {/* Waveform Animation in Input Area */}
+                    {isRecording && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="flex items-center space-x-1">
+                          <div className="w-1 waveform-bar" style={{animationDelay: '0ms'}}></div>
+                          <div className="w-1 waveform-bar" style={{animationDelay: '0.1s'}}></div>
+                          <div className="w-1 waveform-bar" style={{animationDelay: '0.2s'}}></div>
+                          <div className="w-1 waveform-bar" style={{animationDelay: '0.3s'}}></div>
+                          <div className="w-1 waveform-bar" style={{animationDelay: '0.4s'}}></div>
+                          <div className="w-1 waveform-bar" style={{animationDelay: '0.5s'}}></div>
+                          <div className="w-1 waveform-bar" style={{animationDelay: '0.6s'}}></div>
+                          <div className="w-1 waveform-bar" style={{animationDelay: '0.7s'}}></div>
+                          <div className="w-1 waveform-bar" style={{animationDelay: '0.8s'}}></div>
+                          <div className="w-1 waveform-bar" style={{animationDelay: '0.9s'}}></div>
+                        </div>
+                        <span className="ml-4 text-gray-500 text-sm font-medium">
+                          {formatRecordingTime(recordingTime)}
+                        </span>
+                      </div>
+                    )}
                   </div>
-
-                  <div className="mt-3 flex items-center space-x-2 text-xs text-gray-500">
-                    <Heart className="h-3 w-3" />
-                    <span>This AI assistant provides general health information and is not a substitute for professional medical advice.</span>
-                  </div>
+                  <button
+                    onClick={handleVoiceToggle}
+                    disabled={isLoading || isTranslating}
+                    className={`relative p-3 rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${isRecording
+                      ? 'bg-gray-900 text-white shadow-lg'
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                      }`}
+                    title={isRecording ? 'Stop recording' : 'Start voice recording'}
+                  >
+                    {isRecording ? (
+                      <div className="relative">
+                        <div className="w-4 h-4 bg-white rounded-sm"></div>
+                        <div className="absolute -inset-1 rounded-full border border-gray-700 opacity-30 recording-pulse"></div>
+                      </div>
+                    ) : (
+                      <Mic className="h-5 w-5" />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleSendMessage()}
+                    disabled={!inputMessage.trim() || isLoading || isTranslating || isRecording}
+                    className="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Send className="h-5 w-5" />
+                  </button>
+                </div>
+                <div className="mt-3 flex items-center space-x-2 text-xs text-gray-500">
+                  <Heart className="h-3 w-3" />
+                  <span>This AI assistant provides general health information and is not a substitute for professional medical advice.</span>
                 </div>
               </div>
             </div>

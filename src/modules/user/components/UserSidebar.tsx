@@ -90,6 +90,13 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ isOpen, setIsOpen }) => {
       available: true
     },
     {
+      id: 'active-medicines',
+      name: 'Active Medicines',
+      icon: <Pill className="h-5 w-5" />,
+      path: '/user/active-medicines',
+      available: true
+    },
+    {
       id: 'profile',
       name: 'Profile',
       icon: <User className="h-5 w-5" />,

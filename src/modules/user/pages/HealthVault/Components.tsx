@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
-import { Upload, X, CheckCircle, Loader } from 'lucide-react';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+import { Upload, X, CheckCircle, Loader, FileText, Pill, FlaskConical } from 'lucide-react';
+import { userAPI } from '../../services/userAPI';
+import { ScannedDocument } from '../../../../shared/types';
 
 interface FileUploadModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSave: (extractedText: string) => void;
 }
+
+
+export { DocumentViewModal } from './DocumentViewModal';
 
 export const FileUploadModal: React.FC<FileUploadModalProps> = ({ isOpen, onClose, onSave }) => {
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -16,6 +21,9 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({ isOpen, onClos
     const [extractedText, setExtractedText] = useState<string>('');
     const [ocrProgress, setOcrProgress] = useState<number>(0);
     const [showExtractedText, setShowExtractedText] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState<'medical-history' | 'prescription' | 'lab-report' | 'other'>('other');
+    const [isSaving, setIsSaving] = useState(false);
+    const [aiAnalysis, setAiAnalysis] = useState<any>(null);
 
     // File upload 
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -79,6 +87,9 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({ isOpen, onClos
         setIsProcessing(false);
         setOcrProgress(0);
         setShowExtractedText(false);
+        setSelectedCategory('other');
+        setIsSaving(false);
+        setAiAnalysis(null);
         onClose();
     };
 
@@ -90,69 +101,40 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({ isOpen, onClos
         setExtractedText('');
 
         try {
-            //Gemini AI
-            const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-            //file to base64 conversion (we can upload the direct image to gemini ai but fist we have to upload it any where else and then update it)
-            //so, converting to base64 is an easy and time efficent option for both ai and user
+            // Convert file to base64
             const base64 = await fileToBase64(uploadedFile);
-
             setOcrProgress(25);
-
-            const prompt = `Please extract all text from this medical document image. Focus on:
-            - Patient information (name, age, ID)
-            - Medical conditions and diagnoses
-            - Prescriptions and medications
-            - Lab results and values
-            - Doctor information
-            - Dates and timestamps
-            - Any other relevant medical information
-            
-            Return the extracted text in a clear, organized format. If this is a prescription, organize it as:
-            - Patient: [name]
-            - Doctor: [name]
-            - Date: [date]
-            - Medications: [list with dosage and instructions]
-            
-            If this is a lab report, organize it as:
-            - Patient: [name]
-            - Lab: [name]
-            - Date: [date]
-            - Test Results: [list with values and ranges]`;
 
             setOcrProgress(50);
 
-            const result = await model.generateContent([
-                prompt,
-                {
-                    inlineData: {
-                        data: base64,
-                        mimeType: uploadedFile.type
-                    }
-                }
-            ]);
+            // Call backend Gemini OCR API (send only base64 and mimeType)
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/ai/gemini-ocr/ocr`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ base64, mimeType: uploadedFile.type })
+            });
 
             setOcrProgress(75);
 
-            const response = await result.response;
-            const text = response.text().trim();
-
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'OCR backend error');
+            }
+            const result = await response.json();
             setOcrProgress(100);
 
-            if (text) {
-                setExtractedText(text);
-                setShowExtractedText(true);
-            } else {
-                setUploadError('No text could be extracted from this file. Please try a clearer image.');
-            }
+            const data = result.data || {};
+            setExtractedText(data.extractedText || '');
+            setSelectedCategory(data.category || 'other');
+            setAiAnalysis(data.analysis || {});
+            setShowExtractedText(true);
         } catch (error) {
             console.error('OCR Error:', error);
-            if (error instanceof Error && error.message.includes('API_KEY')) {
-                setUploadError('Gemini API key is not configured. Please check your environment variables.');
-            } else {
-                setUploadError('Failed to extract text from the file. Please try again.');
-            }
+            setUploadError('Failed to extract text from the file. Please try again.');
         } finally {
             setIsProcessing(false);
             setOcrProgress(0);
@@ -180,17 +162,50 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({ isOpen, onClos
         }
     };
 
-    const saveExtractedData = () => {
-        onSave(extractedText);
-        resetUpload();
+    const saveExtractedData = async () => {
+        if (!uploadedFile || !extractedText) return;
+
+        setIsSaving(true);
+        try {
+            const documentData: Partial<ScannedDocument> = {
+                fileName: uploadedFile.name,
+                fileType: uploadedFile.type,
+                fileSize: uploadedFile.size,
+                category: selectedCategory,
+                extractedText: extractedText,
+                aiAnalysis: {
+                    patientName: aiAnalysis?.patientName || '',
+                    doctorName: aiAnalysis?.doctorName || '',
+                    date: aiAnalysis?.date ? new Date(aiAnalysis.date) : undefined,
+                    medications: aiAnalysis?.medications || [],
+                    testResults: aiAnalysis?.testResults || [],
+                    diagnosis: aiAnalysis?.diagnosis || '',
+                    labName: aiAnalysis?.labName || ''
+                },
+                originalFileUrl: '', // We'll implement file upload later
+                uploadDate: new Date(),
+                isProcessed: true,
+                confidence: aiAnalysis?.confidence || 0
+            };
+
+            await userAPI.addScannedDocument(documentData);
+            onSave(extractedText);
+            resetUpload();
+        } catch (error) {
+            console.error('Error saving document:', error);
+            setUploadError('Failed to save document. Please try again.');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
-                <div className="flex items-center justify-between mb-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl w-full max-w-md max-h-[90vh] flex flex-col">
+               
+                <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-200">
                     <h3 className="text-lg font-semibold text-gray-900">Upload Medical Report</h3>
                     <button
                         onClick={resetUpload}
@@ -199,6 +214,9 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({ isOpen, onClos
                         <X className="h-5 w-5" />
                     </button>
                 </div>
+
+            
+                <div className="flex-1 overflow-y-auto p-6 pt-4">
 
                 <div className="mb-4">
                     <p className="text-sm text-gray-600 mb-2">Upload your medical reports, lab results, or prescriptions for AI-powered analysis</p>
@@ -275,44 +293,108 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({ isOpen, onClos
 
                 {/* AI Analysis Results Display */}
                 {showExtractedText && extractedText && (
-                    <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                        <h4 className="font-medium text-green-800 mb-2">AI Analysis Results:</h4>
-                        <div className="max-h-40 overflow-y-auto bg-white p-3 rounded border">
-                            <pre className="text-sm text-gray-700 whitespace-pre-wrap">{extractedText}</pre>
+                    <div className="mt-4 space-y-4">
+                        {/* Category Selection */}
+                        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <h4 className="font-medium text-blue-800 mb-3">Document Category:</h4>
+                            <div className="grid grid-cols-2 gap-2">
+                                {[
+                                    { id: 'medical-history', label: 'Medical History', icon: <FileText className="h-4 w-4" /> },
+                                    { id: 'prescription', label: 'Prescription', icon: <Pill className="h-4 w-4" /> },
+                                    { id: 'lab-report', label: 'Lab Report', icon: <FlaskConical className="h-4 w-4" /> },
+                                    { id: 'other', label: 'Other', icon: <FileText className="h-4 w-4" /> }
+                                ].map((category) => (
+                                    <button
+                                        key={category.id}
+                                        onClick={() => setSelectedCategory(category.id as any)}
+                                        className={`flex items-center space-x-2 p-2 rounded text-sm font-medium transition-colors ${selectedCategory === category.id
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-white text-gray-700 hover:bg-blue-100'
+                                            }`}
+                                    >
+                                        {category.icon}
+                                        <span>{category.label}</span>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
-                        <div className="mt-3 flex space-x-2">
+
+                        {/* AI Analysis Summary */}
+                        {aiAnalysis && Object.keys(aiAnalysis).length > 0 && (
+                            <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                                <h4 className="font-medium text-purple-800 mb-2">AI Analysis Summary:</h4>
+                                <div className="space-y-2 text-sm">
+                                    {aiAnalysis.patientName && (
+                                        <div><span className="font-medium">Patient:</span> {aiAnalysis.patientName}</div>
+                                    )}
+                                    {aiAnalysis.doctorName && (
+                                        <div><span className="font-medium">Doctor:</span> {aiAnalysis.doctorName}</div>
+                                    )}
+                                    {aiAnalysis.diagnosis && (
+                                        <div><span className="font-medium">Diagnosis:</span> {aiAnalysis.diagnosis}</div>
+                                    )}
+                                    {aiAnalysis.labName && (
+                                        <div><span className="font-medium">Lab:</span> {aiAnalysis.labName}</div>
+                                    )}
+                                    {aiAnalysis.medications && aiAnalysis.medications.length > 0 && (
+                                        <div><span className="font-medium">Medications:</span> {aiAnalysis.medications.length} found</div>
+                                    )}
+                                    {aiAnalysis.testResults && aiAnalysis.testResults.length > 0 && (
+                                        <div><span className="font-medium">Test Results:</span> {aiAnalysis.testResults.length} found</div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Extracted Text */}
+                        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                            <h4 className="font-medium text-green-800 mb-2">Extracted Text:</h4>
+                            <div className="max-h-60 overflow-y-auto bg-white p-3 rounded border border-gray-200 shadow-sm">
+                                <pre className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed font-mono">{extractedText}</pre>
+                            </div>
+                            <div className="mt-2 text-xs text-gray-500 text-center">
+                                Scroll to view full text
+                            </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex space-x-2">
                             <button
                                 onClick={() => setShowExtractedText(false)}
-                                className="text-sm px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+                                className="flex-1 text-sm px-3 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
                             >
                                 Hide
                             </button>
                             <button
                                 onClick={saveExtractedData}
-                                className="text-sm px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                                disabled={isSaving}
+                                className="flex-1 text-sm px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
-                                Save to Health Vault
+                                {isSaving ? 'Saving...' : 'Save to Health Vault'}
                             </button>
                         </div>
                     </div>
                 )}
+                </div>
 
-                {/* Action Buttons */}
-                <div className="flex space-x-3 mt-6">
-                    <button
-                        onClick={resetUpload}
-                        disabled={isProcessing}
-                        className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={handleUpload}
-                        disabled={!uploadedFile || isProcessing}
-                        className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-                    >
-                        {isProcessing ? 'Processing...' : showExtractedText ? 'Process Again' : 'Analyze Document'}
-                    </button>
+                {/* Fixed Footer */}
+                <div className="border-t border-gray-200 p-6 pt-4">
+                    <div className="flex space-x-3">
+                        <button
+                            onClick={resetUpload}
+                            disabled={isProcessing}
+                            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleUpload}
+                            disabled={!uploadedFile || isProcessing}
+                            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                        >
+                            {isProcessing ? 'Processing...' : showExtractedText ? 'Process Again' : 'Analyze Document'}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

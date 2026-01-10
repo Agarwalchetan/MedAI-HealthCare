@@ -60,6 +60,39 @@ const insuranceSchema = new mongoose.Schema({
   isActive: { type: Boolean, default: false }
 });
 
+const scannedDocumentSchema = new mongoose.Schema({
+  fileName: { type: String, required: true },
+  fileType: { type: String, required: true },
+  fileSize: { type: Number, required: true },
+  category: { 
+    type: String, 
+    required: true,
+    enum: ['medical-history', 'prescription', 'lab-report', 'other']
+  },
+  extractedText: { type: String, required: true },
+  aiAnalysis: {
+    patientName: { type: String, default: '' },
+    doctorName: { type: String, default: '' },
+    date: { type: Date },
+    medications: [{ 
+      name: String, 
+      dosage: String, 
+      frequency: String 
+    }],
+    testResults: [{ 
+      testName: String, 
+      value: String, 
+      normalRange: String 
+    }],
+    diagnosis: { type: String, default: '' },
+    labName: { type: String, default: '' }
+  },
+  originalFileUrl: { type: String, default: '' },
+  uploadDate: { type: Date, default: Date.now },
+  isProcessed: { type: Boolean, default: true },
+  confidence: { type: Number, default: 0 } 
+});
+
 const userSchema = new mongoose.Schema({
   fullName: {
     type: String,
@@ -111,11 +144,18 @@ const userSchema = new mongoose.Schema({
   prescriptions: [prescriptionSchema],
   labReports: [labReportSchema],
   insurance: insuranceSchema,
+  scannedDocuments: [scannedDocumentSchema],
   profilePicture: { type: String, default: '' },
   isEmailVerified: { type: Boolean, default: false },
   isPhoneVerified: { type: Boolean, default: false },
   lastLogin: { type: Date },
-  isActive: { type: Boolean, default: true }
+  isActive: { type: Boolean, default: true },
+  active_medicine: [{
+    name: { type: String, required: true },
+    timeToTake: { type: String, required: true },
+    daysGap: { type: Number, required: true },
+    startDate: { type: Date, required: true }
+  }]
 }, {
   timestamps: true
 });

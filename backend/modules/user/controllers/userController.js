@@ -141,3 +141,55 @@ export const updateInsurance = asyncHandler(async (req, res) => {
     data: { insurance }
   });
 });
+
+// Scanned Documents endpoints
+export const getScannedDocuments = asyncHandler(async (req, res) => {
+  const user = await UserService.getUserById(req.user._id);
+  
+  res.status(200).json({
+    success: true,
+    data: { scannedDocuments: user.scannedDocuments }
+  });
+});
+
+export const addScannedDocument = asyncHandler(async (req, res) => {
+  const scannedDocument = await UserService.addScannedDocument(req.user._id, req.body);
+  
+  res.status(201).json({
+    success: true,
+    message: 'Scanned document saved successfully',
+    data: { scannedDocument }
+  });
+});
+
+export const deleteScannedDocument = asyncHandler(async (req, res) => {
+  const { documentId } = req.params;
+  await UserService.deleteScannedDocument(req.user._id, documentId);
+  
+  res.status(200).json({
+    success: true,
+    message: 'Scanned document deleted successfully'
+  });
+});
+
+export const getActiveMedicine = asyncHandler(async (req, res) => {
+  const user = await UserService.getUserById(req.user._id);
+  res.status(200).json({
+    success: true,
+    data: { active_medicine: user.active_medicine || [] }
+  });
+});
+
+export const updateActiveMedicine = asyncHandler(async (req, res) => {
+  // req.body should be an array of active medicine objects
+  if (!Array.isArray(req.body)) {
+    return res.status(400).json({ success: false, message: 'Body must be an array.' });
+  }
+  // Optionally add field validation here.
+  const updatedUser = await UserService.updateUser(req.user._id, { active_medicine: req.body });
+  res.status(200).json({
+    success: true,
+    message: 'Active medicines updated successfully',
+    data: { active_medicine: updatedUser.active_medicine }
+  });
+});

@@ -141,4 +141,44 @@ export class UserService {
       throw error;
     }
   }
+
+  static async addScannedDocument(userId, documentData) {
+    try {
+      const user = await User.findById(userId);
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      user.scannedDocuments.push(documentData);
+      await user.save();
+      
+      return user.scannedDocuments[user.scannedDocuments.length - 1];
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async deleteScannedDocument(userId, documentId) {
+    try {
+      const user = await User.findById(userId);
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      const documentIndex = user.scannedDocuments.findIndex(
+        doc => doc._id.toString() === documentId
+      );
+      
+      if (documentIndex === -1) {
+        throw new Error('Scanned document not found');
+      }
+
+      user.scannedDocuments.splice(documentIndex, 1);
+      await user.save();
+      
+      return true;
+    } catch (error) {
+      throw error;
+    }
+  }
 }

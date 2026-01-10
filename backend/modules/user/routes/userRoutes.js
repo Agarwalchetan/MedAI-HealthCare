@@ -12,7 +12,12 @@ import {
   getLabReports,
   addLabReport,
   getInsuranceDetails,
-  updateInsurance
+  updateInsurance,
+  getScannedDocuments,
+  addScannedDocument,
+  deleteScannedDocument,
+  getActiveMedicine,
+  updateActiveMedicine
 } from '../controllers/userController.js';
 import { authenticate } from '../../../middlewares/authMiddleware.js';
 import { 
@@ -52,5 +57,14 @@ router.post('/lab-reports', addLabReport);
 // Insurance
 router.get('/insurance', getInsuranceDetails);
 router.put('/insurance', updateInsurance);
+
+// Scanned Documents
+router.get('/scanned-documents', getScannedDocuments);
+router.post('/scanned-documents', addScannedDocument);
+router.delete('/scanned-documents/:documentId', deleteScannedDocument);
+
+// Active Medicines
+router.get('/active-medicine', authenticate, getActiveMedicine);
+router.put('/active-medicine', authenticate, updateActiveMedicine);
 
 export default router;

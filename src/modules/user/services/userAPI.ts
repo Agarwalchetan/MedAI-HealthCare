@@ -1,5 +1,5 @@
 import api from '../../../shared/utils/api';
-import { AuthResponse, ApiResponse, User, MedicalHistory, Prescription, LabReport, Insurance, Appointment ,Doctor} from '../../../shared/types';
+import { AuthResponse, ApiResponse, User, MedicalHistory, Prescription, LabReport, Insurance, Appointment, Doctor, ScannedDocument, ActiveMedicine } from '../../../shared/types';
 
 export const userAPI = {
   // Authentication
@@ -100,6 +100,32 @@ export const userAPI = {
     const response = await api.get(`/appointments/doctors/${doctorId}/slots?date=${date}`);
     console.log("response Data",response.data) 
     
+    return response.data;
+  },
+
+  // Scanned Documents
+  getScannedDocuments: async (): Promise<ApiResponse<{ scannedDocuments: ScannedDocument[] }>> => {
+    const response = await api.get('/users/scanned-documents');
+    return response.data;
+  },
+
+  addScannedDocument: async (documentData: Partial<ScannedDocument>): Promise<ApiResponse<{ scannedDocument: ScannedDocument }>> => {
+    const response = await api.post('/users/scanned-documents', documentData);
+    return response.data;
+  },
+
+  deleteScannedDocument: async (documentId: string): Promise<ApiResponse> => {
+    const response = await api.delete(`/users/scanned-documents/${documentId}`);
+    return response.data;
+  },
+
+  // Active Medicines
+  getActiveMedicine: async (): Promise<ApiResponse<{ active_medicine: ActiveMedicine[] }>> => {
+    const response = await api.get('/users/active-medicine');
+    return response.data;
+  },
+  updateActiveMedicine: async (medicines: ActiveMedicine[]): Promise<ApiResponse<{ active_medicine: ActiveMedicine[] }>> => {
+    const response = await api.put('/users/active-medicine', medicines);
     return response.data;
   }
 };

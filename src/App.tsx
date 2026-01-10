@@ -22,6 +22,7 @@ import LabReports from './modules/user/pages/LabReports';
 import Insurance from './modules/user/pages/Insurance';
 import Paramedics from './modules/user/pages/Paramedics';
 import Medicines from './modules/user/pages/Medicines';
+import ActiveMedicinePage from './modules/user/pages/ActiveMedicinePage';
 import Appointments from './modules/user/pages/Appointments';
 import HealthVault from './modules/user/pages/HealthVault';
 
@@ -222,6 +223,11 @@ function App() {
             <Route path="/user/medicines" element={
               <ProtectedRoute>
                 <Medicines />
+              </ProtectedRoute>
+            } />
+            <Route path="/user/active-medicines" element={
+              <ProtectedRoute>
+                <ActiveMedicinePage />
               </ProtectedRoute>
             } />
             <Route path="/user/appointments" element={
