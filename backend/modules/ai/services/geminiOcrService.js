@@ -72,10 +72,15 @@ Return everything in this exact JSON format:
 
 class GeminiOcrService {
   constructor() {
-    this.apiKey = process.env.GEMINI_API_KEY;
-    if (!this.apiKey) throw new Error('GEMINI_API_KEY not set in environment');
     this.modelName = 'gemini-2.5-flash';
   }
+
+  get apiKey() {
+    const key = process.env.GEMINI_API_KEY;
+    if (!key) throw new Error('GEMINI_API_KEY not set in environment');
+    return key;
+  }
+
 
   async ocrWithGemini(base64, _prompt, mimeType) {
     // Always use the centralized prompt

@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import { Resend } from 'resend';
-const resend = new Resend(process.env.YOUR_RESEND_API_KEY);
+// Resend initialized lazily inside method
 
 
 
@@ -19,39 +19,40 @@ export class UserService {
       if (existingUser) {
         throw new Error('User already exists with this email');
       }
- const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const verificationExpires = new Date(Date.now() + 10 * 60 * 1000); // Expires in 10 minutes
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const verificationExpires = new Date(Date.now() + 10 * 60 * 1000); // Expires in 10 minutes
 
-      const user = new User(userData,{
+      const user = new User(userData, {
         emailVerificationCode: verificationCode,
-      emailVerificationExpires: verificationExpires,
+        emailVerificationExpires: verificationExpires,
       });
       await user.save();
-      
+
       return user;
     } catch (error) {
       throw error;
     }
   }
 
-  static async sendVerificationEmail(email ,verificationCode){
+  static async sendVerificationEmail(email, verificationCode) {
     try {
-          await resend.emails.send({
-      from: 'onboarding@yourdomain.com',
-      to: email,
-      subject: 'Verify Your Email Address',
-      html: `
+      const resend = new Resend(process.env.YOUR_RESEND_API_KEY);
+      await resend.emails.send({
+        from: 'onboarding@yourdomain.com',
+        to: email,
+        subject: 'Verify Your Email Address',
+        html: `
         <h1>Welcome to MedAI!</h1>
         <p>Thank you for registering. Please use the following code to verify your email address:</p>
         <h2>${verificationCode}</h2>
         <p>This code will expire in 10 minutes.</p>
       `,
-    }); 
+      });
 
     } catch (error) {
       throw error
     }
-  } 
+  }
   static async authenticateUser(email, password) {
     try {
       const user = await User.findOne({ email }).select('+password');
@@ -89,15 +90,15 @@ export class UserService {
   static async updateUser(userId, updateData) {
     try {
       const user = await User.findByIdAndUpdate(
-        userId, 
-        updateData, 
+        userId,
+        updateData,
         { new: true, runValidators: true }
       );
-      
+
       if (!user) {
         throw new Error('User not found');
       }
-      
+
       return user;
     } catch (error) {
       throw error;
@@ -113,7 +114,7 @@ export class UserService {
 
       user.medicalHistory.push(medicalData);
       await user.save();
-      
+
       return user.medicalHistory[user.medicalHistory.length - 1];
     } catch (error) {
       throw error;
@@ -129,7 +130,7 @@ export class UserService {
 
       user.prescriptions.push(prescriptionData);
       await user.save();
-      
+
       return user.prescriptions[user.prescriptions.length - 1];
     } catch (error) {
       throw error;
@@ -145,7 +146,7 @@ export class UserService {
 
       user.labReports.push(labReportData);
       await user.save();
-      
+
       return user.labReports[user.labReports.length - 1];
     } catch (error) {
       throw error;
@@ -159,11 +160,11 @@ export class UserService {
         { insurance: insuranceData },
         { new: true, runValidators: true }
       );
-      
+
       if (!user) {
         throw new Error('User not found');
       }
-      
+
       return user.insurance;
     } catch (error) {
       throw error;
@@ -179,7 +180,7 @@ export class UserService {
 
       user.scannedDocuments.push(documentData);
       await user.save();
-      
+
       return user.scannedDocuments[user.scannedDocuments.length - 1];
     } catch (error) {
       throw error;
@@ -196,14 +197,14 @@ export class UserService {
       const documentIndex = user.scannedDocuments.findIndex(
         doc => doc._id.toString() === documentId
       );
-      
+
       if (documentIndex === -1) {
         throw new Error('Scanned document not found');
       }
 
       user.scannedDocuments.splice(documentIndex, 1);
       await user.save();
-      
+
       return true;
     } catch (error) {
       throw error;

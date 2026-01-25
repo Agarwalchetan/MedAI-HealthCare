@@ -14,19 +14,25 @@ import {
   getInsuranceDetails,
   updateInsurance,
   verifyUserEmail,
-  resendCode
+  resendCode,
+  getScannedDocuments,
+  addScannedDocument,
+  deleteScannedDocument,
+  getActiveMedicine,
+  updateActiveMedicine
 } from '../controllers/userController.js';
+import upload from '../../../middlewares/multer.middleware.js';
 import { authenticate } from '../../../middlewares/authMiddleware.js';
-import { 
-  validateUserRegistration, 
-  validateUserLogin, 
-  validateProfileUpdate 
+import {
+  validateUserRegistration,
+  validateUserLogin,
+  validateProfileUpdate
 } from '../../../middlewares/validation.js';
 
 const router = express.Router();
 
 // Authentication routes
-router.post('/register', validateUserRegistration, upload.single("aadhar"),  registerUser);
+router.post('/register', validateUserRegistration, upload.single("aadhar"), registerUser);
 router.post('/login', validateUserLogin, loginUser);
 
 router.post('/logout', logoutUser);

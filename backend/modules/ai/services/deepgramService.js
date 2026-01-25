@@ -1,16 +1,13 @@
 import FormData from 'form-data';
 import fetch from 'node-fetch';
-import dotenv from "dotenv";
-dotenv.config();
 
 export class DeepgramService {
   constructor() {
-    this.apiKey = process.env.DEEPGRAM_API_KEY;
     this.baseUrl = 'https://api.deepgram.com/v1';
-    
-    if (!this.apiKey && process.env.NODE_ENV === 'production') {
-      throw new Error('Deepgram API key is not configured');
-    }
+  }
+
+  get apiKey() {
+    return process.env.DEEPGRAM_API_KEY;
   }
 
 
@@ -19,7 +16,7 @@ export class DeepgramService {
       if (!this.apiKey) {
         throw new Error('Deepgram API key is not configured. Please set DEEPGRAM_API_KEY in your environment variables.');
       }
-  
+
       const response = await fetch(`${this.baseUrl}/listen?model=nova-2&language=en&smart_format=true`, {
         method: 'POST',
         headers: {
@@ -28,22 +25,22 @@ export class DeepgramService {
         },
         body: audioBuffer,  // send raw binary data
       });
-  
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Deepgram API error:', response.status, errorText);
         throw new Error(`Deepgram API request failed: ${response.status}`);
       }
-  
+
       const data = await response.json();
       console.log('Deepgram response:', data);
-  
+
       const transcript = data.results?.channels?.[0]?.alternatives?.[0]?.transcript;
-  
+
       if (!transcript || !transcript.trim()) {
         throw new Error('No speech detected. Please try again.');
       }
-  
+
       return {
         success: true,
         transcript: transcript.trim(),
@@ -54,7 +51,7 @@ export class DeepgramService {
       throw error;
     }
   }
-  
+
 
 
   async textToSpeech(text, model = 'aura-asteria-en') {

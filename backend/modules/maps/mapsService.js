@@ -1,5 +1,5 @@
 import axios from 'axios';
-const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+// Key accessed dynamically in functions
 const PLACES_API_URL = 'https://places.googleapis.com/v1/places:searchNearby';
 const PLACES_TEXT_SEARCH_URL = 'https://places.googleapis.com/v1/places:searchText';
 
@@ -86,7 +86,8 @@ function convertPlaceToParamedic(place, userLocation) {
 }
 
 const searchNearbyHospitals = async (userLocation, radiusMeters = 20000) => {
-    if (!GOOGLE_MAPS_API_KEY) throw new Error('Google Maps API key not configured');
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    if (!apiKey) throw new Error('Google Maps API key not configured');
     const medicalQueries = [
         { includedTypes: ['hospital'] },
         { includedTypes: ['pharmacy'] },
@@ -115,7 +116,7 @@ const searchNearbyHospitals = async (userLocation, radiusMeters = 20000) => {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-Goog-Api-Key': GOOGLE_MAPS_API_KEY,
+                    'X-Goog-Api-Key': apiKey,
                     'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.googleMapsUri,places.nationalPhoneNumber,places.internationalPhoneNumber,places.currentOpeningHours,places.types,places.businessStatus'
                 }
             }
@@ -143,7 +144,8 @@ const searchNearbyHospitals = async (userLocation, radiusMeters = 20000) => {
 };
 
 const searchHospitalsByText = async (query, userLocation, radiusMeters = 10000) => {
-    if (!GOOGLE_MAPS_API_KEY) throw new Error('Google Maps API key not configured');
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    if (!apiKey) throw new Error('Google Maps API key not configured');
     const medicalSearchQueries = [
         `${query} hospital`,
         `${query} medical center`,
@@ -172,7 +174,7 @@ const searchHospitalsByText = async (query, userLocation, radiusMeters = 10000) 
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-Goog-Api-Key': GOOGLE_MAPS_API_KEY,
+                    'X-Goog-Api-Key': apiKey,
                     'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.googleMapsUri,places.nationalPhoneNumber,places.internationalPhoneNumber,places.currentOpeningHours,places.types,places.businessStatus'
                 }
             }
@@ -198,9 +200,10 @@ const searchHospitalsByText = async (query, userLocation, radiusMeters = 10000) 
 };
 
 const getCurrentAddress = async (location) => {
-    if (!GOOGLE_MAPS_API_KEY) throw new Error('Google Maps API key not configured');
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    if (!apiKey) throw new Error('Google Maps API key not configured');
     const response = await axios.get(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${location.latitude},${location.longitude}&key=${GOOGLE_MAPS_API_KEY}`
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${location.latitude},${location.longitude}&key=${apiKey}`
     );
     if (response.data.results && response.data.results.length > 0) {
         return response.data.results[0].formatted_address;

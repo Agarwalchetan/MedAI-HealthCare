@@ -2,25 +2,28 @@ import fetch from 'node-fetch';
 
 export class TranslationService {
   constructor() {
-    this.apiKey = process.env.SARVAM_API_KEY;
     this.baseUrl = 'https://api.sarvam.ai';
-
-    if (!this.apiKey) {
-      throw new Error('Sarvam API key is not configured. Set SARVAM_API_KEY in your environment.');
-    }
   }
 
-  
+  get apiKey() {
+    const key = process.env.SARVAM_API_KEY;
+    if (!key) {
+      throw new Error('Sarvam API key is not configured. Set SARVAM_API_KEY in your environment.');
+    }
+    return key;
+  }
+
+
   normalizeLangCode(code) {
     if (!code) return code;
-    if (code.includes('-')) return code; 
+    if (code.includes('-')) return code;
     const map = {
       en: 'en-IN', hi: 'hi-IN', bn: 'bn-IN', te: 'te-IN', mr: 'mr-IN', ta: 'ta-IN', ur: 'ur-IN',
       gu: 'gu-IN', kn: 'kn-IN', ml: 'ml-IN', od: 'od-IN', or: 'od-IN', pa: 'pa-IN', as: 'as-IN',
       brx: 'brx-IN', doi: 'doi-IN', kok: 'kok-IN', ks: 'ks-IN', mai: 'mai-IN', mni: 'mni-IN',
       ne: 'ne-IN', sa: 'sa-IN', sat: 'sat-IN', sd: 'sd-IN'
     };
-    return map[code] || code; 
+    return map[code] || code;
   }
 
 
@@ -29,7 +32,7 @@ export class TranslationService {
     return code.split('-')[0];
   }
 
- 
+
   async identifyLanguage(text) {
     try {
       const resp = await fetch(`${this.baseUrl}/text-lid`, {
@@ -53,7 +56,7 @@ export class TranslationService {
     }
   }
 
- 
+
   async translateText(text, targetLanguage, sourceLanguage = 'auto') {
     if (!text || !text.trim()) {
       return {
@@ -121,7 +124,7 @@ export class TranslationService {
     }
   }
 
- 
+
   async translateToEnglish(text, sourceLanguage = 'auto') {
     return this.translateText(text, 'en-IN', sourceLanguage);
   }

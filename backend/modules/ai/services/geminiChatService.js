@@ -1,15 +1,23 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY ;
+// Lazy initialization to allow environment variables to load
+let genAI = null;
 
-if (!GEMINI_API_KEY) {
-  throw new Error('Gemini API key is not configured. Set GEMINI_API_KEY in your environment.');
-}
+const getGenAI = () => {
+  if (genAI) return genAI;
 
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error('Gemini API key is not configured. Set GEMINI_API_KEY in your environment.');
+  }
+
+  genAI = new GoogleGenerativeAI(apiKey);
+  return genAI;
+};
 
 export const getGeminiChatResponse = async (message) => {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const ai = getGenAI();
+  const model = ai.getGenerativeModel({ model: "gemini-2.5-flash" });
   const prompt = message;
   const result = await model.generateContent(prompt);
   const response = result.response;
