@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
-const { Resend } = require('resend');
+import { Resend } from 'resend';
 const resend = new Resend(process.env.YOUR_RESEND_API_KEY);
 
 
